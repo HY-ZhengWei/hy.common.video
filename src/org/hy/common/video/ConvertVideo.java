@@ -43,7 +43,7 @@ public class ConvertVideo
             String currPath = diretory.getAbsolutePath(); 
             inputPath  = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\inputPath\\R06820181025000000.flv"; 
             outputPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath\\"; 
-            ffmpegPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-20171225-be2da4c-win64-static\\bin\\"; 
+            ffmpegPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static\\bin\\"; 
             System.out.println(currPath); 
         } 
         catch (Exception e) 
