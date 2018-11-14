@@ -41,7 +41,7 @@ public class ConvertVideo
         try 
         { 
             String currPath = diretory.getAbsolutePath(); 
-            inputPath  = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\inputPath\\R06820181025000000.flv"; 
+            inputPath  = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\inputPath\\20180919-WZYB-3.mpg"; 
             outputPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath\\"; 
             ffmpegPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static\\bin\\"; 
             System.out.println(currPath); 
