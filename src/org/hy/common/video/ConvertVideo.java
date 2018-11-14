@@ -3,7 +3,11 @@ package org.hy.common.video;
 import java.io.File; 
 import java.io.IOException;
 import java.util.ArrayList; 
-import java.util.List; 
+import java.util.List;
+
+import org.hy.common.Date;
+import org.hy.common.Help;
+import org.hy.common.StringHelp; 
 
 
 
@@ -13,7 +17,7 @@ public class ConvertVideo
 { 
     private static String inputPath = ""; 
     private static String outputPath = ""; 
-    private static String ffmpegPath = ""; 
+    private static String ffmpegPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static\\bin\\"; 
     
     
     
@@ -43,7 +47,6 @@ public class ConvertVideo
             String currPath = diretory.getAbsolutePath(); 
             inputPath  = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\inputPath\\20180919-WZYB-3.mpg"; 
             outputPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath\\"; 
-            ffmpegPath = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static\\bin\\"; 
             System.out.println(currPath); 
         } 
         catch (Exception e) 
@@ -195,8 +198,9 @@ public class ConvertVideo
         } 
         
         List<String> command = new ArrayList<String>(); 
+        
         command.add(ffmpegPath + "ffmpeg"); 
-        command.add("-i"); 
+        command.add("-i");                       // 如果输出文件已存在则覆盖
         command.add(oldfilepath); 
         command.add("-c:v"); 
         command.add("libx264"); 
@@ -210,7 +214,11 @@ public class ConvertVideo
         command.add("yuv420p"); 
         command.add("-movflags"); 
         command.add("faststart"); 
+        command.add("-s");                       // 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用
+        command.add("1080x720");
         command.add(outputPath + "a.mp4"); 
+        command.add("-y");                       // 源视频文件
+        
         try 
         { 
             // 方案1 
