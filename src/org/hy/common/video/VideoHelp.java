@@ -27,6 +27,79 @@ public class VideoHelp
     
     
     /**
+     * 将视频转为MP4格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2018-11-23
+     * @version     v1.0
+     *
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @param i_ResolutionX  视频分辨率1080x720中的：1080
+     * @param i_ResolutionY  视频分辨率1080x720中的：720
+     * @return
+     */
+    public static boolean toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY) 
+    { 
+        File v_SourceFile = new File(i_SourceFile);
+        if ( !v_SourceFile.isFile() ) 
+        { 
+            System.out.println(i_SourceFile + " is not file"); 
+            return false; 
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            System.out.println(i_SourceFile + " can not read"); 
+            return false; 
+        }
+        
+        String v_SName = StringHelp.getFileShortName(v_SourceFile.getName());
+        
+        List<String> command = new ArrayList<String>(); 
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_SourceFile); 
+        command.add("-c:v"); 
+        command.add("libx264"); 
+        command.add("-mbd"); 
+        command.add("0"); 
+        command.add("-c:a"); 
+        command.add("aac"); 
+        command.add("-strict"); 
+        command.add("-2"); 
+        command.add("-pix_fmt"); 
+        command.add("yuv420p"); 
+        command.add("-movflags"); 
+        command.add("faststart"); 
+        command.add("-s");                       // 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用
+        command.add(i_ResolutionX + "x" + i_ResolutionY);
+        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + ".mp4"); 
+        command.add("-y");                       // 源视频文件
+        
+        try 
+        { 
+            // 方案1 
+            //        Process videoProcess = Runtime.getRuntime().exec(ffmpegPath + "ffmpeg -i " + oldfilepath 
+            //                + " -ab 56 -ar 22050 -qscale 8 -r 15 -s 600x500 " 
+            //                + outputPath + "a.flv"); 
+            // 方案2 
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
+            new PrintStream(videoProcess.getErrorStream()).start(); 
+            new PrintStream(videoProcess.getInputStream()).start(); 
+            videoProcess.waitFor(); 
+            return true; 
+        } 
+        catch (Exception e) 
+        { 
+            e.printStackTrace(); 
+            return false; 
+        } 
+    }
+    
+    
+    
+    /**
      * 将视频文件分割成多个小的视频文件
      * 
      * @author      ZhengWei(HY)
@@ -93,7 +166,7 @@ public class VideoHelp
     { 
         List<String> command = new ArrayList<String>(); 
 
-        command.add($FFMpegHome + Help.getSysCurrentPath() + "bin" + Help.getSysCurrentPath() + "//" + "ffmpeg"); 
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg"); 
         command.add("-i"); 
         command.add(i_SourceFile); 
         command.add("-vcodec");                  // copy表示使用跟原视频一样的视频编解码器

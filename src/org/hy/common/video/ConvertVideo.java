@@ -5,10 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList; 
 import java.util.List;
 
-import org.hy.common.Date;
-import org.hy.common.Help;
-import org.hy.common.StringHelp; 
-
 
 
 
@@ -62,7 +58,7 @@ public class ConvertVideo
         int type = checkContentType(); 
         boolean status = false; 
         System.out.println("直接转成mp4格式"); 
-        status = processMp4(inputPath);// 直接转成mp4格式 
+        status = false; // processMp4(inputPath);// 直接转成mp4格式 
         return status; 
     } 
     
@@ -186,57 +182,5 @@ public class ConvertVideo
             return false; 
         } 
     } 
-    
-    
-    
-    private static boolean processMp4(String oldfilepath) 
-    { 
-        if (!checkfile(inputPath)) 
-        { 
-            System.out.println(oldfilepath + " is not file"); 
-            return false; 
-        } 
-        
-        List<String> command = new ArrayList<String>(); 
-        
-        command.add(ffmpegPath + "ffmpeg"); 
-        command.add("-i");                       // 如果输出文件已存在则覆盖
-        command.add(oldfilepath); 
-        command.add("-c:v"); 
-        command.add("libx264"); 
-        command.add("-mbd"); 
-        command.add("0"); 
-        command.add("-c:a"); 
-        command.add("aac"); 
-        command.add("-strict"); 
-        command.add("-2"); 
-        command.add("-pix_fmt"); 
-        command.add("yuv420p"); 
-        command.add("-movflags"); 
-        command.add("faststart"); 
-        command.add("-s");                       // 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用
-        command.add("1080x720");
-        command.add(outputPath + "a.mp4"); 
-        command.add("-y");                       // 源视频文件
-        
-        try 
-        { 
-            // 方案1 
-            //        Process videoProcess = Runtime.getRuntime().exec(ffmpegPath + "ffmpeg -i " + oldfilepath 
-            //                + " -ab 56 -ar 22050 -qscale 8 -r 15 -s 600x500 " 
-            //                + outputPath + "a.flv"); 
-            // 方案2 
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
-            new PrintStream(videoProcess.getErrorStream()).start(); 
-            new PrintStream(videoProcess.getInputStream()).start(); 
-            videoProcess.waitFor(); 
-            return true; 
-        } 
-        catch (Exception e) 
-        { 
-            e.printStackTrace(); 
-            return false; 
-        } 
-    }
     
 }

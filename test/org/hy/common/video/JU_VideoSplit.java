@@ -14,7 +14,7 @@ public class JU_VideoSplit
     {
         VideoHelp.$FFMpegHome = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        VideoHelp.splits("D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath\\WZYB-1080-720.mp4" 
+        VideoHelp.splits("D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath\\WZYB-720x480.mp4" 
                         ,"D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath" 
                         ,50 
                         ,5);
