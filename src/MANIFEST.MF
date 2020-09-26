@@ -1,5 +1,5 @@
-Manifest-Version: 1.0.0
+Manifest-Version: 1.0.1
 Created-By: HY.ZhengWei@qq.com  2018
-Specification-Version: 1.0.0  2018-11-13
+Specification-Version: 1.0.1  2020-09-26
 SourceCode: https://github.com/HY-ZhengWei/hy.common.video
 Build-JDK: 1.6

@@ -1,6 +1,8 @@
 package org.hy.common.video;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,7 @@ import org.hy.common.StringHelp;
  * @author      ZhengWei(HY)
  * @createDate  2018-11-14
  * @version     v1.0
+ *              v2.0  2020-09-26  添加：获取视频信息（如，视频的宽度、高度）
  */
 public class VideoHelp
 {
@@ -193,6 +196,95 @@ public class VideoHelp
             e.printStackTrace(); 
             return false; 
         } 
+    }
+    
+    
+    
+    /**
+     * 获取视频信息（如，视频的宽度、高度）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-09-26
+     * @version     v1.0
+     *
+     * @param i_VideoFile  视频文件的路径
+     * @return
+     */
+    public static VideoInfo getVideoInfo(String i_VideoFile)
+    {
+        List<String>   command  = new ArrayList<String>(); 
+        BufferedReader v_Reader = null;
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg"); 
+        command.add("-i"); 
+        command.add(i_VideoFile); 
+        
+        try 
+        {
+            String  v_Line       = "";
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
+            new PrintStream(videoProcess.getErrorStream()).start(); 
+            
+            v_Reader = new BufferedReader(new InputStreamReader(videoProcess.getInputStream()));
+            
+            while ( (v_Line=v_Reader.readLine())!=null ) 
+            {
+                if ( Help.isNull(v_Line) )
+                {
+                    continue;
+                }
+                
+                if ( v_Line.indexOf("x") < 0 )
+                {
+                    continue;
+                }
+                
+                String [] v_LinePamas = v_Line.split(",");
+                
+                for (String v_LP : v_LinePamas)
+                {
+                    if ( v_LP.trim().indexOf("x") >= 0 )
+                    {
+                        String [] v_WH = v_LP.split("x");
+                        
+                        if ( v_WH.length == 2 )
+                        {
+                            if ( Help.isNumber(v_WH[0].trim()) && Help.isNumber(v_WH[1].trim()) )
+                            {
+                                VideoInfo v_Video = new VideoInfo();
+                                
+                                v_Video.setWidth( Integer.parseInt(v_WH[0].trim()));
+                                v_Video.setHeight(Integer.parseInt(v_WH[1].trim()));
+                                
+                                return v_Video;
+                            }
+                        }
+                    }
+                }
+            }
+        } 
+        catch (Exception e) 
+        { 
+            e.printStackTrace(); 
+        } 
+        finally
+        {
+            if ( v_Reader != null )
+            {
+                try
+                {
+                    v_Reader.close();
+                }
+                catch (Exception exce)
+                {
+                    // Nothing.
+                }
+                
+                v_Reader = null;
+            }
+        }
+        
+        return null;
     }
     
 }
