@@ -21,11 +21,76 @@ import org.hy.common.StringHelp;
  * @createDate  2018-11-14
  * @version     v1.0
  *              v2.0  2020-09-26  添加：获取视频信息（如，视频的宽度、高度）
+ *              v3.0  2020-09-27  添加：将视频的前多少帧转换成一个动图（Animated Gif）
  */
 public class VideoHelp
 {
     
     public static String $FFMpegHome;
+    
+    
+    
+    /**
+     * 将视频的前多少帧转换成一个动图（Animated Gif）
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2020-09-27
+     * @version     v1.0
+     *
+     * @param i_VideoFile        视频文件
+     * @param i_GifFile          保存生成的Gif动图
+     * @param i_Frame            视频的前多少帧
+     * @param i_ResolutionRatio  视频分辨率。如 320x240、640x480
+     * @return
+     */
+    public static boolean toGif(String i_VideoFile ,String i_GifFile ,int i_Frame ,String i_ResolutionRatio)
+    {
+        File v_SourceFile = new File(i_VideoFile);
+        if ( !v_SourceFile.isFile() ) 
+        { 
+            System.out.println(i_VideoFile + " is not file"); 
+            return false; 
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            System.out.println(i_VideoFile + " can not read"); 
+            return false; 
+        }
+        File v_GifFile = new File(i_GifFile);
+        if ( v_GifFile.exists() )
+        {
+            System.out.println(i_GifFile + " is exists"); 
+            return false; 
+        }
+        
+        List<String> command = new ArrayList<String>(); 
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_VideoFile); 
+        command.add("-vframes");
+        command.add("" + i_Frame);
+        command.add("-s");
+        command.add(i_ResolutionRatio);
+        command.add("-y");
+        command.add("-f");
+        command.add("gif");
+        command.add(i_GifFile);
+        
+        try 
+        { 
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
+            new PrintStream(videoProcess.getErrorStream()).start(); 
+            new PrintStream(videoProcess.getInputStream()).start(); 
+            videoProcess.waitFor(); 
+            return true; 
+        } 
+        catch (Exception e) 
+        { 
+            e.printStackTrace(); 
+            return false; 
+        } 
+    }
     
     
     
@@ -212,6 +277,18 @@ public class VideoHelp
      */
     public static VideoInfo getVideoInfo(String i_VideoFile)
     {
+        File v_SourceFile = new File(i_VideoFile);
+        if ( !v_SourceFile.isFile() ) 
+        { 
+            System.out.println(i_VideoFile + " is not file"); 
+            return null; 
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            System.out.println(i_VideoFile + " can not read"); 
+            return null; 
+        }
+        
         List<String>   command  = new ArrayList<String>(); 
         BufferedReader v_Reader = null;
         
