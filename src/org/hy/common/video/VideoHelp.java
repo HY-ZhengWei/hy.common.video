@@ -9,6 +9,7 @@ import java.util.List;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.StringHelp;
+import org.hy.common.xml.log.Logger;
 
 
 
@@ -25,6 +26,8 @@ import org.hy.common.StringHelp;
  */
 public class VideoHelp
 {
+    
+    private static final Logger $Logger = new Logger(VideoHelp.class);
     
     public static String $FFMpegHome;
     
@@ -280,12 +283,12 @@ public class VideoHelp
         File v_SourceFile = new File(i_VideoFile);
         if ( !v_SourceFile.isFile() ) 
         { 
-            System.out.println(i_VideoFile + " is not file"); 
+            $Logger.error(i_VideoFile + " is not file"); 
             return null; 
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_VideoFile + " can not read"); 
+            $Logger.error(i_VideoFile + " can not read"); 
             return null; 
         }
         
@@ -310,6 +313,8 @@ public class VideoHelp
                 {
                     continue;
                 }
+                
+                $Logger.info(v_Line);
                 
                 if ( !StringHelp.isContains(v_Line ,true ,"x" ,",") )
                 {
