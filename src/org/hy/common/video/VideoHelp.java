@@ -65,7 +65,7 @@ public class VideoHelp
         
         List<String> command = new ArrayList<String>(); 
         
-        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg");
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
         command.add("-i");                       // 如果输出文件已存在则覆盖
         command.add(i_VideoFile); 
         command.add("-vframes");
@@ -125,7 +125,7 @@ public class VideoHelp
         
         List<String> command = new ArrayList<String>(); 
         
-        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg");
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
         command.add("-i");                       // 如果输出文件已存在则覆盖
         command.add(i_SourceFile); 
         command.add("-c:v"); 
@@ -234,7 +234,7 @@ public class VideoHelp
     { 
         List<String> command = new ArrayList<String>(); 
 
-        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg"); 
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg"); 
         command.add("-i"); 
         command.add(i_SourceFile); 
         command.add("-vcodec");                  // copy表示使用跟原视频一样的视频编解码器
@@ -292,7 +292,7 @@ public class VideoHelp
         List<String>   command  = new ArrayList<String>(); 
         BufferedReader v_Reader = null;
         
-        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "//" + "ffmpeg"); 
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg"); 
         command.add("-i"); 
         command.add(i_VideoFile); 
         
@@ -311,7 +311,7 @@ public class VideoHelp
                     continue;
                 }
                 
-                if ( v_Line.indexOf("x") < 0 )
+                if ( !StringHelp.isContains(v_Line ,true ,"x" ,",") )
                 {
                     continue;
                 }
@@ -328,12 +328,18 @@ public class VideoHelp
                         {
                             if ( Help.isNumber(v_WH[0].trim()) && Help.isNumber(v_WH[1].trim()) )
                             {
-                                VideoInfo v_Video = new VideoInfo();
+                                int v_Width  = Integer.parseInt(v_WH[0].trim());
+                                int v_Height = Integer.parseInt(v_WH[1].trim());
                                 
-                                v_Video.setWidth( Integer.parseInt(v_WH[0].trim()));
-                                v_Video.setHeight(Integer.parseInt(v_WH[1].trim()));
-                                
-                                return v_Video;
+                                if ( v_Width > 0 && v_Height > 0 )
+                                {
+                                    VideoInfo v_Video = new VideoInfo();
+                                    
+                                    v_Video.setWidth( v_Width);
+                                    v_Video.setHeight(v_Height);
+                                    
+                                    return v_Video;
+                                }
                             }
                         }
                     }
