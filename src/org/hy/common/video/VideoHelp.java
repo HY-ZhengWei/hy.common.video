@@ -314,9 +314,10 @@ public class VideoHelp
                     continue;
                 }
                 
-                $Logger.info(v_Line);
+                boolean v_IsHaveX = StringHelp.isContains(v_Line ,true ,"x" ,",");
+                $Logger.info("IsHaveX = " +  (v_IsHaveX ? "1" : "0")  + v_Line);
                 
-                if ( !StringHelp.isContains(v_Line ,true ,"x" ,",") )
+                if ( !v_IsHaveX )
                 {
                     continue;
                 }
