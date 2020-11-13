@@ -322,30 +322,27 @@ public class VideoHelp
                     continue;
                 }
                 
-                String [] v_LinePamas = v_Line.split(",");
+                String [] v_LinePamas = StringHelp.replaceAll(v_Line ," " ,",").split(",");
                 
                 for (String v_LP : v_LinePamas)
                 {
-                    if ( v_LP.trim().indexOf("x") >= 0 )
+                    String [] v_WH = v_LP.split("x");
+                    
+                    if ( v_WH.length == 2 )
                     {
-                        String [] v_WH = v_LP.split("x");
-                        
-                        if ( v_WH.length == 2 )
+                        if ( Help.isNumber(v_WH[0].trim()) && Help.isNumber(v_WH[1].trim()) )
                         {
-                            if ( Help.isNumber(v_WH[0].trim()) && Help.isNumber(v_WH[1].trim()) )
+                            int v_Width  = Integer.parseInt(v_WH[0].trim());
+                            int v_Height = Integer.parseInt(v_WH[1].trim());
+                            
+                            if ( v_Width > 0 && v_Height > 0 )
                             {
-                                int v_Width  = Integer.parseInt(v_WH[0].trim());
-                                int v_Height = Integer.parseInt(v_WH[1].trim());
+                                VideoInfo v_Video = new VideoInfo();
                                 
-                                if ( v_Width > 0 && v_Height > 0 )
-                                {
-                                    VideoInfo v_Video = new VideoInfo();
-                                    
-                                    v_Video.setWidth( v_Width);
-                                    v_Video.setHeight(v_Height);
-                                    
-                                    return v_Video;
-                                }
+                                v_Video.setWidth( v_Width);
+                                v_Video.setHeight(v_Height);
+                                
+                                return v_Video;
                             }
                         }
                     }
