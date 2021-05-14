@@ -13,11 +13,11 @@ public class JU_VideoSplit
     @Test
     public void split()
     {
-        VideoHelp.$FFMpegHome = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static";
+        VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        VideoHelp.splits("D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath\\WZYB-720x480.mp4" 
-                        ,"D:\\WorkSpace_SearchDesktop\\hy.common.video\\test\\outputPath" 
-                        ,50 
+        VideoHelp.splits("E:\\WSS\\文档库\\WZYB-720x480.mp4"
+                        ,"E:\\"
+                        ,50
                         ,5);
     }
     
