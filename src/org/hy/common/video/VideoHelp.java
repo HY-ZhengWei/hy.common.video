@@ -23,6 +23,7 @@ import org.hy.common.xml.log.Logger;
  * @version     v1.0
  *              v2.0  2020-09-26  添加：获取视频信息（如，视频的宽度、高度）
  *              v3.0  2020-09-27  添加：将视频的前多少帧转换成一个动图（Animated Gif）
+ *              v4.0  2021-06-21  添加：Mp4转M3U8(HLS)的视频
  */
 public class VideoHelp
 {
@@ -49,28 +50,28 @@ public class VideoHelp
     public static boolean toGif(String i_VideoFile ,String i_GifFile ,int i_Frame ,String i_ResolutionRatio)
     {
         File v_SourceFile = new File(i_VideoFile);
-        if ( !v_SourceFile.isFile() ) 
-        { 
-            System.out.println(i_VideoFile + " is not file"); 
-            return false; 
+        if ( !v_SourceFile.isFile() )
+        {
+            System.out.println(i_VideoFile + " is not file");
+            return false;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_VideoFile + " can not read"); 
-            return false; 
+            System.out.println(i_VideoFile + " can not read");
+            return false;
         }
         File v_GifFile = new File(i_GifFile);
         if ( v_GifFile.exists() )
         {
-            System.out.println(i_GifFile + " is exists"); 
-            return false; 
+            System.out.println(i_GifFile + " is exists");
+            return false;
         }
         
-        List<String> command = new ArrayList<String>(); 
+        List<String> command = new ArrayList<String>();
         
         command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
         command.add("-i");                       // 如果输出文件已存在则覆盖
-        command.add(i_VideoFile); 
+        command.add(i_VideoFile);
         command.add("-vframes");
         command.add("" + i_Frame);
         command.add("-s");
@@ -80,19 +81,19 @@ public class VideoHelp
         command.add("gif");
         command.add(i_GifFile);
         
-        try 
-        { 
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
-            new PrintStream(videoProcess.getErrorStream()).start(); 
-            new PrintStream(videoProcess.getInputStream()).start(); 
-            videoProcess.waitFor(); 
-            return true; 
-        } 
-        catch (Exception e) 
-        { 
-            e.printStackTrace(); 
-            return false; 
-        } 
+        try
+        {
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
+            new PrintStream(videoProcess.getInputStream()).start();
+            videoProcess.waitFor();
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     
@@ -110,62 +111,184 @@ public class VideoHelp
      * @param i_ResolutionY  视频分辨率1080x720中的：720
      * @return
      */
-    public static boolean toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY) 
-    { 
+    public static boolean toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY)
+    {
         File v_SourceFile = new File(i_SourceFile);
-        if ( !v_SourceFile.isFile() ) 
-        { 
-            System.out.println(i_SourceFile + " is not file"); 
-            return false; 
+        if ( !v_SourceFile.isFile() )
+        {
+            System.out.println(i_SourceFile + " is not file");
+            return false;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_SourceFile + " can not read"); 
-            return false; 
+            System.out.println(i_SourceFile + " can not read");
+            return false;
         }
         
         String v_SName = StringHelp.getFileShortName(v_SourceFile.getName());
         
-        List<String> command = new ArrayList<String>(); 
+        List<String> command = new ArrayList<String>();
         
         command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
         command.add("-i");                       // 如果输出文件已存在则覆盖
-        command.add(i_SourceFile); 
-        command.add("-c:v"); 
-        command.add("libx264"); 
-        command.add("-mbd"); 
-        command.add("0"); 
-        command.add("-c:a"); 
-        command.add("aac"); 
-        command.add("-strict"); 
-        command.add("-2"); 
-        command.add("-pix_fmt"); 
-        command.add("yuv420p"); 
-        command.add("-movflags"); 
-        command.add("faststart"); 
+        command.add(i_SourceFile);
+        command.add("-c:v");
+        command.add("libx264");
+        command.add("-mbd");
+        command.add("0");
+        command.add("-c:a");
+        command.add("aac");
+        command.add("-strict");
+        command.add("-2");
+        command.add("-pix_fmt");
+        command.add("yuv420p");
+        command.add("-movflags");
+        command.add("faststart");
         command.add("-s");                       // 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用
         command.add(i_ResolutionX + "x" + i_ResolutionY);
-        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + ".mp4"); 
+        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + ".mp4");
         command.add("-y");                       // 源视频文件
         
-        try 
-        { 
-            // 方案1 
-            //        Process videoProcess = Runtime.getRuntime().exec(ffmpegPath + "ffmpeg -i " + oldfilepath 
-            //                + " -ab 56 -ar 22050 -qscale 8 -r 15 -s 600x500 " 
-            //                + outputPath + "a.flv"); 
-            // 方案2 
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
-            new PrintStream(videoProcess.getErrorStream()).start(); 
-            new PrintStream(videoProcess.getInputStream()).start(); 
-            videoProcess.waitFor(); 
-            return true; 
-        } 
-        catch (Exception e) 
-        { 
-            e.printStackTrace(); 
-            return false; 
-        } 
+        try
+        {
+            // 方案1
+            //        Process videoProcess = Runtime.getRuntime().exec(ffmpegPath + "ffmpeg -i " + oldfilepath
+            //                + " -ab 56 -ar 22050 -qscale 8 -r 15 -s 600x500 "
+            //                + outputPath + "a.flv");
+            // 方案2
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
+            new PrintStream(videoProcess.getInputStream()).start();
+            videoProcess.waitFor();
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    
+    
+    /**
+     * 将视频MP4转为TS格式的(步骤1)
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-21
+     * @version     v1.0
+     *
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @return               成功时返回生成的TS全路径
+     */
+    public static String mp4ToTS(String i_SourceFile ,String i_SavePath)
+    {
+        File v_SourceFile = new File(i_SourceFile);
+        if ( !v_SourceFile.isFile() )
+        {
+            System.out.println(i_SourceFile + " is not file");
+            return null;
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            System.out.println(i_SourceFile + " can not read");
+            return null;
+        }
+        
+        String v_SName  = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_TSName = i_SavePath + Help.getSysPathSeparator() + v_SName + ".ts";
+        
+        List<String> command = new ArrayList<String>();
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-y");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_SourceFile);
+        command.add("-vcodec");
+        command.add("copy");
+        command.add("-acodec");
+        command.add("copy");
+        command.add("-vbsf");
+        command.add("h264_mp4toannexb");
+        command.add(v_TSName);
+        
+        try
+        {
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
+            new PrintStream(videoProcess.getInputStream()).start();
+            videoProcess.waitFor();
+            return v_TSName;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    
+    
+    /**
+     * 将视频TS转为M3U8格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-21
+     * @version     v1.0
+     *
+     * @param i_SourceFile    原视频文件
+     * @param i_SavePath      保存路径
+     * @param i_SplitTimeLen  视频分割时长（单位：秒）
+     * @return                成功时返回生成的M3U8全路径
+     */
+    public static String tsToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen)
+    {
+        File v_SourceFile = new File(i_SourceFile);
+        if ( !v_SourceFile.isFile() )
+        {
+            System.out.println(i_SourceFile + " is not file");
+            return null;
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            System.out.println(i_SourceFile + " can not read");
+            return null;
+        }
+        
+        String v_SName = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_M3U8  = i_SavePath + Help.getSysPathSeparator() + v_SName + ".m3u8";
+        
+        List<String> command = new ArrayList<String>();
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_SourceFile);
+        command.add("-c");
+        command.add("copy");
+        command.add("-map");
+        command.add("0");
+        command.add("-f");
+        command.add("segment");
+        command.add("-segment_list");
+        command.add(v_M3U8);
+        command.add("-segment_time");
+        command.add("" + i_SplitTimeLen);
+        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + i_SplitTimeLen + "s_%3d.ts");
+        
+        try
+        {
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
+            new PrintStream(videoProcess.getInputStream()).start();
+            videoProcess.waitFor();
+            return v_M3U8;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
     
     
@@ -183,18 +306,18 @@ public class VideoHelp
      * @param i_SplitSize    总分割数量
      * @return
      */
-    public static boolean splits(String i_SourceFile ,String i_SavePath ,int i_SplitSecond ,int i_SplitSize) 
-    { 
+    public static boolean splits(String i_SourceFile ,String i_SavePath ,int i_SplitSecond ,int i_SplitSize)
+    {
         File v_SourceFile = new File(i_SourceFile);
-        if ( !v_SourceFile.isFile() ) 
-        { 
-            System.out.println(i_SourceFile + " is not file"); 
-            return false; 
+        if ( !v_SourceFile.isFile() )
+        {
+            System.out.println(i_SourceFile + " is not file");
+            return false;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_SourceFile + " can not read"); 
-            return false; 
+            System.out.println(i_SourceFile + " can not read");
+            return false;
         }
         
         Date   v_Time    = new Date("2000-01-01 00:00:00");
@@ -205,12 +328,12 @@ public class VideoHelp
         for (int i=0; i<i_SplitSize; i++)
         {
             split(i_SourceFile
-                 ,new Date(v_Start) 
-                 ,new Date(v_Start + i_SplitSecond * 1000) 
+                 ,new Date(v_Start)
+                 ,new Date(v_Start + i_SplitSecond * 1000)
                  ,i_SavePath + Help.getSysPathSeparator()
                              + v_SName
-                             + "-" 
-                             + StringHelp.lpad(i + 1 ,3 ,"0") 
+                             + "-"
+                             + StringHelp.lpad(i + 1 ,3 ,"0")
                              + v_Postfix);
             v_Start += i_SplitSecond * 1000;
         }
@@ -233,37 +356,37 @@ public class VideoHelp
      * @param i_SaveFileName  保存名称及路径
      * @return
      */
-    public static boolean split(String i_SourceFile ,Date i_StratTime ,Date i_EndTime ,String i_SaveFileName) 
-    { 
-        List<String> command = new ArrayList<String>(); 
+    public static boolean split(String i_SourceFile ,Date i_StratTime ,Date i_EndTime ,String i_SaveFileName)
+    {
+        List<String> command = new ArrayList<String>();
 
-        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg"); 
-        command.add("-i"); 
-        command.add(i_SourceFile); 
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-i");
+        command.add(i_SourceFile);
         command.add("-vcodec");                  // copy表示使用跟原视频一样的视频编解码器
-        command.add("copy"); 
+        command.add("copy");
         command.add("-acodec");                  // copy表示使用跟原视频一样的音频编解码器。
-        command.add("copy"); 
+        command.add("copy");
         command.add("-ss");                      // 设置从视频的哪个时间点开始截取
-        command.add(i_StratTime.getHMS()); 
+        command.add(i_StratTime.getHMS());
         command.add("-to");                      // 截到视频的哪个时间点结束
-        command.add(i_EndTime.getHMS()); 
-        command.add(i_SaveFileName); 
+        command.add(i_EndTime.getHMS());
+        command.add(i_SaveFileName);
         command.add("-y");
         
-        try 
-        { 
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
-            new PrintStream(videoProcess.getErrorStream()).start(); 
-            new PrintStream(videoProcess.getInputStream()).start(); 
-            videoProcess.waitFor(); 
-            return true; 
-        } 
-        catch (Exception e) 
-        { 
-            e.printStackTrace(); 
-            return false; 
-        } 
+        try
+        {
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
+            new PrintStream(videoProcess.getInputStream()).start();
+            videoProcess.waitFor();
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     
@@ -281,33 +404,33 @@ public class VideoHelp
     public static VideoInfo getVideoInfo(String i_VideoFile)
     {
         File v_SourceFile = new File(i_VideoFile);
-        if ( !v_SourceFile.isFile() ) 
-        { 
-            $Logger.error(i_VideoFile + " is not file"); 
-            return null; 
+        if ( !v_SourceFile.isFile() )
+        {
+            $Logger.error(i_VideoFile + " is not file");
+            return null;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            $Logger.error(i_VideoFile + " can not read"); 
-            return null; 
+            $Logger.error(i_VideoFile + " can not read");
+            return null;
         }
         
-        List<String>   command  = new ArrayList<String>(); 
+        List<String>   command  = new ArrayList<String>();
         BufferedReader v_Reader = null;
         
-        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg"); 
-        command.add("-i"); 
-        command.add(i_VideoFile); 
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-i");
+        command.add(i_VideoFile);
         
-        try 
+        try
         {
             String  v_Line       = "";
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start(); 
-            new PrintStream(videoProcess.getErrorStream()).start(); 
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
             
             v_Reader = new BufferedReader(new InputStreamReader(videoProcess.getInputStream()));
             
-            while ( (v_Line=v_Reader.readLine())!=null ) 
+            while ( (v_Line=v_Reader.readLine())!=null )
             {
                 if ( Help.isNull(v_Line) )
                 {
@@ -348,11 +471,11 @@ public class VideoHelp
                     }
                 }
             }
-        } 
-        catch (Exception e) 
-        { 
-            e.printStackTrace(); 
-        } 
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
         finally
         {
             if ( v_Reader != null )
