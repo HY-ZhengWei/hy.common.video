@@ -9,6 +9,7 @@ import java.util.List;
 import org.hy.common.Date;
 import org.hy.common.Help;
 import org.hy.common.StringHelp;
+import org.hy.common.file.FileHelp;
 import org.hy.common.xml.log.Logger;
 
 
@@ -52,18 +53,18 @@ public class VideoHelp
         File v_SourceFile = new File(i_VideoFile);
         if ( !v_SourceFile.isFile() )
         {
-            System.out.println(i_VideoFile + " is not file");
+            $Logger.warn(i_VideoFile + " is not file");
             return false;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_VideoFile + " can not read");
+            $Logger.warn(i_VideoFile + " can not read");
             return false;
         }
         File v_GifFile = new File(i_GifFile);
         if ( v_GifFile.exists() )
         {
-            System.out.println(i_GifFile + " is exists");
+            $Logger.warn(i_GifFile + " is exists");
             return false;
         }
         
@@ -91,7 +92,7 @@ public class VideoHelp
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            $Logger.error(e);
             return false;
         }
     }
@@ -109,23 +110,24 @@ public class VideoHelp
      * @param i_SavePath     保存路径
      * @param i_ResolutionX  视频分辨率1080x720中的：1080
      * @param i_ResolutionY  视频分辨率1080x720中的：720
-     * @return
+     * @return               成功时返回生成的Mp4全路径
      */
-    public static boolean toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY)
+    public static String toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY)
     {
         File v_SourceFile = new File(i_SourceFile);
         if ( !v_SourceFile.isFile() )
         {
-            System.out.println(i_SourceFile + " is not file");
-            return false;
+            $Logger.warn(i_SourceFile + " is not file");
+            return null;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_SourceFile + " can not read");
-            return false;
+            $Logger.warn(i_SourceFile + " can not read");
+            return null;
         }
         
         String v_SName = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_Ret   = i_SavePath + Help.getSysPathSeparator() + v_SName + ".mp4";
         
         List<String> command = new ArrayList<String>();
         
@@ -146,7 +148,7 @@ public class VideoHelp
         command.add("faststart");
         command.add("-s");                       // 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用
         command.add(i_ResolutionX + "x" + i_ResolutionY);
-        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + ".mp4");
+        command.add(v_Ret);
         command.add("-y");                       // 源视频文件
         
         try
@@ -160,19 +162,58 @@ public class VideoHelp
             new PrintStream(videoProcess.getErrorStream()).start();
             new PrintStream(videoProcess.getInputStream()).start();
             videoProcess.waitFor();
-            return true;
+            return v_Ret;
         }
         catch (Exception e)
         {
-            e.printStackTrace();
-            return false;
+            $Logger.error(e);
+            return null;
         }
     }
     
     
     
     /**
-     * 将视频MP4转为TS格式的(步骤1)
+     * 将视频MP4转M3U8格式
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-21
+     * @version     v1.0
+     * 
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @param i_SplitTimeLen  视频分割时长（单位：秒）
+     * @param i_TSUrl         附加M3U8索引文件中TS访问路径（可为空，表示不附加信息）
+     * @return                成功时返回生成的M3U8全路径
+     */
+    public static String mp4ToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen ,String i_TSUrl)
+    {
+        String v_TSAll = VideoHelp.mp4ToTS(i_SourceFile ,i_SavePath);
+        if ( Help.isNull(v_TSAll) )
+        {
+            return null;
+        }
+        
+        String v_M3U8Name = VideoHelp.tsToM3U8(v_TSAll ,i_SavePath ,i_SplitTimeLen ,i_TSUrl);
+        
+        try
+        {
+            // 删除中间转换用的TS完整视频
+            File v_TSAllFile = new File(v_TSAll);
+            v_TSAllFile.delete();
+        }
+        catch (Exception e)
+        {
+            $Logger.error(e);
+        }
+        
+        return v_M3U8Name;
+    }
+    
+    
+    
+    /**
+     * 将视频MP4转为TS格式的
      * 
      * @author      ZhengWei(HY)
      * @createDate  2021-06-21
@@ -187,12 +228,12 @@ public class VideoHelp
         File v_SourceFile = new File(i_SourceFile);
         if ( !v_SourceFile.isFile() )
         {
-            System.out.println(i_SourceFile + " is not file");
+            $Logger.warn(i_SourceFile + " is not file");
             return null;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_SourceFile + " can not read");
+            $Logger.warn(i_SourceFile + " can not read");
             return null;
         }
         
@@ -223,7 +264,7 @@ public class VideoHelp
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            $Logger.error(e);
             return null;
         }
     }
@@ -244,15 +285,35 @@ public class VideoHelp
      */
     public static String tsToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen)
     {
+        return tsToM3U8(i_SourceFile ,i_SavePath ,i_SplitTimeLen ,null);
+    }
+    
+    
+    
+    /**
+     * 将视频TS转为M3U8格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-21
+     * @version     v1.0
+     *
+     * @param i_SourceFile    原视频文件
+     * @param i_SavePath      保存路径
+     * @param i_SplitTimeLen  视频分割时长（单位：秒）
+     * @param i_TSUrl         附加M3U8索引文件中TS访问路径（可为空，表示不附加信息）
+     * @return                成功时返回生成的M3U8全路径
+     */
+    public static String tsToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen ,String i_TSUrl)
+    {
         File v_SourceFile = new File(i_SourceFile);
         if ( !v_SourceFile.isFile() )
         {
-            System.out.println(i_SourceFile + " is not file");
+            $Logger.warn(i_SourceFile + " is not file");
             return null;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_SourceFile + " can not read");
+            $Logger.warn(i_SourceFile + " can not read");
             return null;
         }
         
@@ -274,7 +335,7 @@ public class VideoHelp
         command.add(v_M3U8);
         command.add("-segment_time");
         command.add("" + i_SplitTimeLen);
-        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + i_SplitTimeLen + "s_%3d.ts");
+        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + "_" + i_SplitTimeLen + "s_%3d.ts");
         
         try
         {
@@ -282,11 +343,23 @@ public class VideoHelp
             new PrintStream(videoProcess.getErrorStream()).start();
             new PrintStream(videoProcess.getInputStream()).start();
             videoProcess.waitFor();
+            
+            if ( !Help.isNull(i_TSUrl) )
+            {
+                FileHelp v_FileHelp = new FileHelp();
+                v_FileHelp.setOverWrite(true);
+                
+                String v_M3U8Content = v_FileHelp.getContent(v_M3U8 ,"UTF-8" ,true);
+                v_M3U8Content = StringHelp.replaceAll(v_M3U8Content ,v_SName ,i_TSUrl + v_SName);
+                
+                v_FileHelp.create(v_M3U8 ,v_M3U8Content);
+            }
+            
             return v_M3U8;
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            $Logger.error(e);
             return null;
         }
     }
@@ -304,41 +377,48 @@ public class VideoHelp
      * @param i_SavePath     保存路径
      * @param i_SplitSecond  每个分割视频文件的秒数
      * @param i_SplitSize    总分割数量
-     * @return
+     * @return               返回所有分割小视频文件的全路径列表
      */
-    public static boolean splits(String i_SourceFile ,String i_SavePath ,int i_SplitSecond ,int i_SplitSize)
+    public static List<String> splits(String i_SourceFile ,String i_SavePath ,int i_SplitSecond ,int i_SplitSize)
     {
         File v_SourceFile = new File(i_SourceFile);
         if ( !v_SourceFile.isFile() )
         {
-            System.out.println(i_SourceFile + " is not file");
-            return false;
+            $Logger.warn(i_SourceFile + " is not file");
+            return null;
         }
         else if ( !v_SourceFile.canRead() )
         {
-            System.out.println(i_SourceFile + " can not read");
-            return false;
+            $Logger.warn(i_SourceFile + " can not read");
+            return null;
         }
         
-        Date   v_Time    = new Date("2000-01-01 00:00:00");
-        long   v_Start   = v_Time.getTime();
-        String v_SName   = StringHelp.getFileShortName(v_SourceFile.getName());
-        String v_Postfix = StringHelp.getFilePostfix(v_SourceFile.getName());
+        Date         v_Time        = new Date("2000-01-01 00:00:00");
+        long         v_Start       = v_Time.getTime();
+        String       v_SName       = StringHelp.getFileShortName(v_SourceFile.getName());
+        String       v_Postfix     = StringHelp.getFilePostfix(v_SourceFile.getName());
+        List<String> v_Ret         = new ArrayList<String>();
+        int          v_SplitSecond = i_SplitSecond + 1;  // 用户想每9秒分割一次，所以是0秒到10秒间（不包含10秒）都为一个分段
         
         for (int i=0; i<i_SplitSize; i++)
         {
+            String v_SplitName = i_SavePath + Help.getSysPathSeparator()
+                               + v_SName
+                               + "-"
+                               + StringHelp.lpad(i + 1 ,3 ,"0")
+                               + v_Postfix;
+            
             split(i_SourceFile
                  ,new Date(v_Start)
-                 ,new Date(v_Start + i_SplitSecond * 1000)
-                 ,i_SavePath + Help.getSysPathSeparator()
-                             + v_SName
-                             + "-"
-                             + StringHelp.lpad(i + 1 ,3 ,"0")
-                             + v_Postfix);
-            v_Start += i_SplitSecond * 1000;
+                 ,new Date(v_Start + v_SplitSecond * 1000)
+                 ,v_SplitName);
+            
+            v_Ret.add(v_SplitName);
+            
+            v_Start += v_SplitSecond * 1000;
         }
         
-        return true;
+        return v_Ret;
     }
     
     
@@ -384,7 +464,7 @@ public class VideoHelp
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            $Logger.error(e);
             return false;
         }
     }
@@ -474,7 +554,7 @@ public class VideoHelp
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            $Logger.error(e);
         }
         finally
         {
