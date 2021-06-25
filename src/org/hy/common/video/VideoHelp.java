@@ -31,7 +31,9 @@ public class VideoHelp
     
     private static final Logger $Logger = new Logger(VideoHelp.class);
     
-    public static String $FFMpegHome;
+    public static String  $FFMpegHome;
+    
+    public static boolean $IsBebug = true;
     
     
     
@@ -81,6 +83,12 @@ public class VideoHelp
         command.add("-f");
         command.add("gif");
         command.add(i_GifFile);
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
         
         try
         {
@@ -151,6 +159,12 @@ public class VideoHelp
         command.add(v_Ret);
         command.add("-y");                       // 源视频文件
         
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
+        
         try
         {
             // 方案1
@@ -188,6 +202,28 @@ public class VideoHelp
      */
     public static String mp4ToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen ,String i_TSUrl)
     {
+        return mp4ToM3U8(i_SourceFile ,i_SavePath ,i_SplitTimeLen ,i_TSUrl ,false ,false);
+    }
+    
+    
+    
+    /**
+     * 将视频MP4转M3U8格式
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-25
+     * @version     v1.0
+     * 
+     * @param i_SourceFile    原视频文件
+     * @param i_SavePath      保存路径
+     * @param i_SplitTimeLen  视频分割时长（单位：秒）
+     * @param i_TSUrl         附加M3U8索引文件中TS访问路径（可为空，表示不附加信息）
+     * @param i_IsDelMp4      是否删除原Mp4文件
+     * @param i_IsDelTSFull   是否删除中间转换用的TS完整视频
+     * @return                成功时返回生成的M3U8全路径
+     */
+    public static String mp4ToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen ,String i_TSUrl ,boolean i_IsDelMp4 ,boolean i_IsDelTSFull)
+    {
         String v_TSAll = VideoHelp.mp4ToTS(i_SourceFile ,i_SavePath);
         if ( Help.isNull(v_TSAll) )
         {
@@ -196,15 +232,31 @@ public class VideoHelp
         
         String v_M3U8Name = VideoHelp.tsToM3U8(v_TSAll ,i_SavePath ,i_SplitTimeLen ,i_TSUrl);
         
-        try
+        if ( i_IsDelMp4 )
         {
-            // 删除中间转换用的TS完整视频
-            File v_TSAllFile = new File(v_TSAll);
-            v_TSAllFile.delete();
+            try
+            {
+                File v_Mp4File = new File(i_SourceFile);
+                v_Mp4File.delete();
+            }
+            catch (Exception e)
+            {
+                $Logger.error(e);
+            }
         }
-        catch (Exception e)
+        
+        if ( i_IsDelTSFull )
         {
-            $Logger.error(e);
+            try
+            {
+                // 删除中间转换用的TS完整视频
+                File v_TSAllFile = new File(v_TSAll);
+                v_TSAllFile.delete();
+            }
+            catch (Exception e)
+            {
+                $Logger.error(e);
+            }
         }
         
         return v_M3U8Name;
@@ -253,6 +305,12 @@ public class VideoHelp
         command.add("-vbsf");
         command.add("h264_mp4toannexb");
         command.add(v_TSName);
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
         
         try
         {
@@ -317,8 +375,9 @@ public class VideoHelp
             return null;
         }
         
-        String v_SName = StringHelp.getFileShortName(v_SourceFile.getName());
-        String v_M3U8  = i_SavePath + Help.getSysPathSeparator() + v_SName + ".m3u8";
+        String v_SName    = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_M3U8Temp = Help.getSysTempPath() + Help.getSysPathSeparator() + Date.getNowTime().getTime() + v_SName + ".m3u8";
+        String v_M3U8     = i_SavePath + Help.getSysPathSeparator() + v_SName + ".m3u8";
         
         List<String> command = new ArrayList<String>();
         
@@ -332,10 +391,16 @@ public class VideoHelp
         command.add("-f");
         command.add("segment");
         command.add("-segment_list");
-        command.add(v_M3U8);
+        command.add(v_M3U8Temp);
         command.add("-segment_time");
         command.add("" + i_SplitTimeLen);
         command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + "_" + i_SplitTimeLen + "s_%3d.ts");
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
         
         try
         {
@@ -349,10 +414,13 @@ public class VideoHelp
                 FileHelp v_FileHelp = new FileHelp();
                 v_FileHelp.setOverWrite(true);
                 
-                String v_M3U8Content = v_FileHelp.getContent(v_M3U8 ,"UTF-8" ,true);
+                String v_M3U8Content = v_FileHelp.getContent(v_M3U8Temp ,"UTF-8" ,true);
                 v_M3U8Content = StringHelp.replaceAll(v_M3U8Content ,v_SName ,i_TSUrl + v_SName);
                 
                 v_FileHelp.create(v_M3U8 ,v_M3U8Content);
+                
+                File v_M3U8TempFile = new File(v_M3U8Temp);
+                v_M3U8TempFile.delete();
             }
             
             return v_M3U8;
@@ -453,6 +521,12 @@ public class VideoHelp
         command.add(i_EndTime.getHMS());
         command.add(i_SaveFileName);
         command.add("-y");
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
         
         try
         {

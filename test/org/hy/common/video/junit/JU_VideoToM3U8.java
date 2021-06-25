@@ -36,7 +36,7 @@ public class JU_VideoToM3U8
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\迅雷下载\\WZYB.mp4" ,"C:\\迅雷下载\\WZYB" ,3 ,"http://127.0.0.1/");
+        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\迅雷下载\\YinTian.mp4" ,"C:\\迅雷下载\\YinTian" ,3 ,"http://127.0.0.1/msFile/file/play/202012YinTian/");
         
         $Logger.info("M3U8路径：" + v_M3U8Name);
     }
@@ -50,7 +50,6 @@ public class JU_VideoToM3U8
      * 
      * @throws IOException
      */
-    @Test
     public void toM3U8_TwoIndex() throws IOException
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";

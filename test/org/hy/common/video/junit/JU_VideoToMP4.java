@@ -22,10 +22,10 @@ public class JU_VideoToMP4
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        VideoHelp.toMP4("E:\\WSS\\文档库\\20190717吴忠仪表宣传片.mp4"
-                       ,"E:\\"
-                       ,720
-                       ,480);
+        VideoHelp.toMP4("C:\\迅雷下载\\A.flv"
+                       ,"C:\\迅雷下载"
+                       ,1280
+                       ,720);
     }
     
 }
