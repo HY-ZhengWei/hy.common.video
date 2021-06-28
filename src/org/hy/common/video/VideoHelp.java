@@ -2,6 +2,7 @@ package org.hy.common.video;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,7 @@ public class VideoHelp
      * @param i_ResolutionY  视频分辨率1080x720中的：720
      * @return               成功时返回生成的Mp4全路径
      */
-    public static String toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY)
+    public static VideoInfo toMP4(String i_SourceFile ,String i_SavePath ,int i_ResolutionX ,int i_ResolutionY)
     {
         File v_SourceFile = new File(i_SourceFile);
         if ( !v_SourceFile.isFile() )
@@ -136,7 +137,7 @@ public class VideoHelp
         }
         
         String v_SName = StringHelp.getFileShortName(v_SourceFile.getName());
-        String v_Ret   = i_SavePath + Help.getSysPathSeparator() + v_SName + ".mp4";
+        String v_Mp4   = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_SName + ".mp4";
         
         List<String> command = new ArrayList<String>();
         
@@ -157,33 +158,61 @@ public class VideoHelp
         command.add("faststart");
         command.add("-s");                       // 设置帧大小 格式为WXH 缺省160X128.下面的简写也可以直接使用
         command.add(i_ResolutionX + "x" + i_ResolutionY);
-        command.add(v_Ret);
+        command.add(v_Mp4);
         command.add("-y");                       // 源视频文件
         
-        if ( !$IsBebug )
+        VideoInfo v_Video = executeCommand(command);
+        if ( v_Video != null )
         {
-            command.add("-loglevel");
-            command.add("quiet");
+            v_Video.setName(v_Mp4);
         }
         
+        return v_Video;
+    }
+    
+    
+    
+    /**
+     * 创建M3U8索引文件
+     * 
+     * @param i_M3U8SaveName
+     * @param i_TSVideo
+     * @return
+     */
+    public static boolean createM3U8File(String i_M3U8SaveName ,VideoInfo i_TSVideo)
+    {
+        if ( i_TSVideo == null || Help.isNull(i_TSVideo.getName()) )
+        {
+            return false;
+        }
+        
+        Long v_TimeValue = Date.toTimeValue(i_TSVideo.getDuration());
+        if ( v_TimeValue == null )
+        {
+            return false;
+        }
+        
+        String v_Content = "#EXTM3U\r\n"
+                         + "#EXT-X-VERSION:3\r\n"
+                         + "#EXT-X-MEDIA-SEQUENCE:0\r\n"
+                         + "#EXT-X-ALLOW-CACHE:YES\r\n"
+                         + "#EXT-X-TARGETDURATION:15\r\n"
+                         + "#EXTINF:" + (v_TimeValue.longValue() / 1000d) + ",\r\n"
+                         + i_TSVideo.getName() + "\r\n"
+                         + "#EXT-X-ENDLIST\r\n";
+        
+        FileHelp v_FileHelp = new FileHelp();
         try
         {
-            // 方案1
-            //        Process videoProcess = Runtime.getRuntime().exec(ffmpegPath + "ffmpeg -i " + oldfilepath
-            //                + " -ab 56 -ar 22050 -qscale 8 -r 15 -s 600x500 "
-            //                + outputPath + "a.flv");
-            // 方案2
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
-            new PrintStream(videoProcess.getErrorStream()).start();
-            new PrintStream(videoProcess.getInputStream()).start();
-            videoProcess.waitFor();
-            return v_Ret;
+            v_FileHelp.create(i_M3U8SaveName ,v_Content);
+            return true;
         }
-        catch (Exception e)
+        catch (Exception exce)
         {
-            $Logger.error(e);
-            return null;
+            $Logger.error(exce);
         }
+        
+        return false;
     }
     
     
@@ -199,7 +228,7 @@ public class VideoHelp
      * @param i_SavePath     保存路径
      * @return               成功时返回生成的TS全路径
      */
-    public static String flvToTS(String i_SourceFile ,String i_SavePath)
+    public static VideoInfo flvToTS(String i_SourceFile ,String i_SavePath)
     {
         // ffmpeg -i C:\迅雷下载\a.flv -vcodec libx264 C:\迅雷下载\a.ts
         // ffmpeg -i C:\迅雷下载\a.flv -c copy -bsf h264_mp4toannexb C:\迅雷下载\c.ts   不想编码的
@@ -217,7 +246,7 @@ public class VideoHelp
         }
         
         String v_FlvName = StringHelp.getFileShortName(v_SourceFile.getName());
-        String v_TSName  = i_SavePath + Help.getSysPathSeparator() + v_FlvName + ".ts";
+        String v_TSName  = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_FlvName + ".ts";
         
         List<String> command = new ArrayList<String>();
         
@@ -228,25 +257,13 @@ public class VideoHelp
         command.add("libx264");
         command.add(v_TSName);
         
-        if ( !$IsBebug )
+        VideoInfo v_Video = executeCommand(command);
+        if ( v_Video != null )
         {
-            command.add("-loglevel");
-            command.add("quiet");
+            v_Video.setName(v_TSName);
         }
         
-        try
-        {
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
-            new PrintStream(videoProcess.getErrorStream()).start();
-            new PrintStream(videoProcess.getInputStream()).start();
-            videoProcess.waitFor();
-            return v_TSName;
-        }
-        catch (Exception e)
-        {
-            $Logger.error(e);
-            return null;
-        }
+        return v_Video;
     }
     
     
@@ -288,13 +305,13 @@ public class VideoHelp
      */
     public static String mp4ToM3U8(String i_SourceFile ,String i_SavePath ,int i_SplitTimeLen ,String i_TSUrl ,boolean i_IsDelMp4 ,boolean i_IsDelTSFull)
     {
-        String v_TSAll = VideoHelp.mp4ToTS(i_SourceFile ,i_SavePath);
-        if ( Help.isNull(v_TSAll) )
+        VideoInfo v_TSAll = VideoHelp.mp4ToTS(i_SourceFile ,i_SavePath);
+        if ( v_TSAll == null )
         {
             return null;
         }
         
-        String v_M3U8Name = VideoHelp.tsToM3U8(v_TSAll ,i_SavePath ,i_SplitTimeLen ,i_TSUrl);
+        String v_M3U8Name = VideoHelp.tsToM3U8(v_TSAll.getName() ,i_SavePath ,i_SplitTimeLen ,i_TSUrl);
         
         if ( i_IsDelMp4 )
         {
@@ -311,16 +328,8 @@ public class VideoHelp
         
         if ( i_IsDelTSFull )
         {
-            try
-            {
-                // 删除中间转换用的TS完整视频
-                File v_TSAllFile = new File(v_TSAll);
-                v_TSAllFile.delete();
-            }
-            catch (Exception e)
-            {
-                $Logger.error(e);
-            }
+            // 删除中间转换用的TS完整视频
+            v_TSAll.delete();
         }
         
         return v_M3U8Name;
@@ -339,7 +348,7 @@ public class VideoHelp
      * @param i_SavePath     保存路径
      * @return               成功时返回生成的TS全路径
      */
-    public static String mp4ToTS(String i_SourceFile ,String i_SavePath)
+    public static VideoInfo mp4ToTS(String i_SourceFile ,String i_SavePath)
     {
         File v_SourceFile = new File(i_SourceFile);
         if ( !v_SourceFile.isFile() )
@@ -354,7 +363,7 @@ public class VideoHelp
         }
         
         String v_SName  = StringHelp.getFileShortName(v_SourceFile.getName());
-        String v_TSName = i_SavePath + Help.getSysPathSeparator() + v_SName + ".ts";
+        String v_TSName = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_SName + ".ts";
         
         List<String> command = new ArrayList<String>();
         
@@ -376,19 +385,13 @@ public class VideoHelp
             command.add("quiet");
         }
         
-        try
+        VideoInfo v_Video = executeCommand(command);
+        if ( v_Video != null )
         {
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
-            new PrintStream(videoProcess.getErrorStream()).start();
-            new PrintStream(videoProcess.getInputStream()).start();
-            videoProcess.waitFor();
-            return v_TSName;
+            v_Video.setName(v_TSName);
         }
-        catch (Exception e)
-        {
-            $Logger.error(e);
-            return null;
-        }
+        
+        return v_Video;
     }
     
     
@@ -441,7 +444,7 @@ public class VideoHelp
         
         String v_SName    = StringHelp.getFileShortName(v_SourceFile.getName());
         String v_M3U8Temp = Help.getSysTempPath() + Help.getSysPathSeparator() + Date.getNowTime().getTime() + v_SName + ".m3u8";
-        String v_M3U8     = i_SavePath + Help.getSysPathSeparator() + v_SName + ".m3u8";
+        String v_M3U8     = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_SName + ".m3u8";
         
         List<String> command = new ArrayList<String>();
         
@@ -458,7 +461,7 @@ public class VideoHelp
         command.add(v_M3U8Temp);
         command.add("-segment_time");
         command.add("" + i_SplitTimeLen);
-        command.add(i_SavePath + Help.getSysPathSeparator() + v_SName + "_" + i_SplitTimeLen + "s_%3d.ts");
+        command.add(i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_SName + "_" + i_SplitTimeLen + "s_%3d.ts");
         
         if ( !$IsBebug )
         {
@@ -534,7 +537,7 @@ public class VideoHelp
         
         for (int i=0; i<i_SplitSize; i++)
         {
-            String v_SplitName = i_SavePath + Help.getSysPathSeparator()
+            String v_SplitName = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator())
                                + v_SName
                                + "-"
                                + StringHelp.lpad(i + 1 ,3 ,"0")
@@ -633,21 +636,44 @@ public class VideoHelp
             return null;
         }
         
-        List<String>   command  = new ArrayList<String>();
-        BufferedReader v_Reader = null;
+        List<String> command  = new ArrayList<String>();
         
         command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
         command.add("-i");
         command.add(i_VideoFile);
         
+        return executeCommand(command);
+    }
+    
+    
+    
+    /**
+     * 执行并解释命令
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-28
+     * @version     v1.0
+     * 
+     * @param i_Command
+     * @return
+     */
+    private static VideoInfo executeCommand(List<String> i_Command)
+    {
+        BufferedReader    v_Reader = null;
+        InputStream       v_Input  = null;
+        InputStreamReader v_InputR = null;
         try
         {
-            String  v_Line       = "";
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            Process videoProcess = new ProcessBuilder(i_Command).redirectErrorStream(true).start();
             new PrintStream(videoProcess.getErrorStream()).start();
+            v_Input  = videoProcess.getInputStream();
+            v_InputR = new InputStreamReader(v_Input);
+            v_Reader = new BufferedReader(v_InputR);
             
-            v_Reader = new BufferedReader(new InputStreamReader(videoProcess.getInputStream()));
-            
+            VideoInfo v_Video          = new VideoInfo();
+            String    v_Line           = "";
+            boolean   v_IsFindDuration = false;    // 是否解释出时长
+            boolean   v_IsFindXY       = false;    // 是否解释出宽高
             while ( (v_Line=v_Reader.readLine())!=null )
             {
                 if ( Help.isNull(v_Line) )
@@ -655,38 +681,71 @@ public class VideoHelp
                     continue;
                 }
                 
-                boolean v_IsHaveX = StringHelp.isContains(v_Line ,true ,"x" ,",");
-                $Logger.info("IsHaveX = " +  (v_IsHaveX ? "1" : "0")  + v_Line);
-                
-                if ( !v_IsHaveX )
+                // 解释出时长
+                if ( !v_IsFindDuration )
                 {
-                    continue;
-                }
-                
-                String [] v_LinePamas = StringHelp.replaceAll(v_Line ," " ,",").split(",");
-                
-                for (String v_LP : v_LinePamas)
-                {
-                    String [] v_WH = v_LP.split("x");
-                    
-                    if ( v_WH.length == 2 )
+                    // Duration: 00:00:58.26, start: 11720.738844, bitrate: 2032 kb/s
+                    boolean v_IsHaveDuration = StringHelp.isContains(v_Line ,true ,"Duration" ,",");
+                    if ( v_IsHaveDuration )
                     {
-                        if ( Help.isNumber(v_WH[0].trim()) && Help.isNumber(v_WH[1].trim()) )
+                        String [] v_LinePamas = v_Line.trim().split(",");
+                        for (String v_LP : v_LinePamas)
                         {
-                            int v_Width  = Integer.parseInt(v_WH[0].trim());
-                            int v_Height = Integer.parseInt(v_WH[1].trim());
-                            
-                            if ( v_Width > 0 && v_Height > 0 )
+                            String [] v_NameValue = v_LP.trim().split(":");
+                            if ( v_NameValue.length >= 2 )
                             {
-                                VideoInfo v_Video = new VideoInfo();
+                                v_NameValue[0] = v_NameValue[0].trim();
                                 
-                                v_Video.setWidth( v_Width);
-                                v_Video.setHeight(v_Height);
-                                
-                                return v_Video;
+                                if ( "Duration".equals(v_NameValue[0]) )
+                                {
+                                    v_Video.setDuration(v_LP.substring(v_LP.indexOf(":") + 1).trim());
+                                    v_IsFindDuration = true;
+                                }
+                                else if ( "bitrate".equals(v_NameValue[0]) )
+                                {
+                                    v_Video.setBitrate(v_NameValue[1].trim());
+                                    v_IsFindDuration = true;
+                                }
                             }
                         }
                     }
+                }
+                
+                if ( !v_IsFindXY )
+                {
+                    // Stream #0:0[0x1e0]: Video: h264 (Main), yuvj420p(pc, bt709, progressive), 1280x720, 22 fps, 25 tbr, 90k tbn, 44 tbc
+                    boolean v_IsHaveX = StringHelp.isContains(v_Line ,true ,"x" ,",");
+                    if ( v_IsHaveX )
+                    {
+                        String [] v_LinePamas = v_Line.trim().split(",");
+                        for (String v_LP : v_LinePamas)
+                        {
+                            String [] v_NameValue = v_LP.split("x");
+                            if ( v_NameValue.length == 2 )
+                            {
+                                v_NameValue[0] = v_NameValue[0].trim();
+                                v_NameValue[1] = v_NameValue[1].trim();
+                                if ( Help.isNumber(v_NameValue[0]) && Help.isNumber(v_NameValue[1]) )
+                                {
+                                    int v_Width  = Integer.parseInt(v_NameValue[0]);
+                                    int v_Height = Integer.parseInt(v_NameValue[1]);
+                                    
+                                    if ( v_Width > 0 && v_Height > 0 )
+                                    {
+                                        v_Video.setWidth( v_Width);
+                                        v_Video.setHeight(v_Height);
+                                        
+                                        v_IsFindXY = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if ( v_IsFindDuration && v_IsFindXY )
+                {
+                    return v_Video;
                 }
             }
         }
@@ -708,6 +767,34 @@ public class VideoHelp
                 }
                 
                 v_Reader = null;
+            }
+            
+            if ( v_InputR != null )
+            {
+                try
+                {
+                    v_InputR.close();
+                }
+                catch (Exception exce)
+                {
+                    // Nothing.
+                }
+                
+                v_InputR = null;
+            }
+            
+            if ( v_Input != null )
+            {
+                try
+                {
+                    v_Input.close();
+                }
+                catch (Exception exce)
+                {
+                    // Nothing.
+                }
+                
+                v_Input = null;
             }
         }
         

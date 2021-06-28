@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hy.common.Date;
+import org.hy.common.StringHelp;
 import org.hy.common.file.FileHelp;
 import org.hy.common.video.VideoHelp;
+import org.hy.common.video.VideoInfo;
 import org.hy.common.xml.log.Logger;
 import org.junit.Test;
 
@@ -53,10 +55,10 @@ public class JU_VideoToM3U8
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         VideoHelp.$IsBebug    = false;
         
-        Date   v_BTime    = new Date();
-        String v_Mp4Name  = VideoHelp.toMP4("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载" ,1280 ,720);
-        String v_M3U8Name = VideoHelp.mp4ToM3U8(v_Mp4Name ,"C:\\迅雷下载" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
-        Date   v_ETime    = new Date();
+        Date      v_BTime    = new Date();
+        VideoInfo v_Mp4Name  = VideoHelp.toMP4("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载" ,1280 ,720);
+        String    v_M3U8Name = VideoHelp.mp4ToM3U8(v_Mp4Name.getName() ,"C:\\迅雷下载" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
+        Date      v_ETime    = new Date();
         
         $Logger.info("M3U8路径：" + v_M3U8Name + "。\t用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
     }
@@ -70,14 +72,46 @@ public class JU_VideoToM3U8
     public void flvToTSToM3U8()
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
-        VideoHelp.$IsBebug    = false;
         
-        Date   v_BTime    = new Date();
-        String v_TSName   = VideoHelp.flvToTS("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载");
-        String v_M3U8Name = VideoHelp.tsToM3U8(v_TSName ,"C:\\迅雷下载" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
-        Date   v_ETime    = new Date();
+        Date v_BTime = new Date();
+        Date v_ETime = new Date();
         
-        $Logger.info("M3U8路径：" + v_M3U8Name + "。\t用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
+        
+        VideoInfo v_TSName = VideoHelp.flvToTS("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载");
+        v_ETime = new Date();
+        $Logger.info("用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
+        
+        
+        String v_M3U8Name = VideoHelp.tsToM3U8(v_TSName.getName() ,"C:\\迅雷下载" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
+        v_ETime = new Date();
+        $Logger.info("用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
+        $Logger.info("M3U8路径：" + v_M3U8Name + "。" );
+    }
+    
+    
+    
+    /**
+     * Flv解码为TS，再TS创建M3U8
+     */
+    @Test
+    public void flvToTSCreateM3U8()
+    {
+        VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
+        
+        Date v_BTime = new Date();
+        Date v_ETime = new Date();
+        
+        
+        VideoInfo v_TSName = VideoHelp.flvToTS("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载\\");
+        v_ETime = new Date();
+        $Logger.info("用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
+        
+        
+        String v_M3U8Name = "C:\\迅雷下载\\A.m3u8";
+        VideoHelp.createM3U8File(v_M3U8Name ,v_TSName.setName(StringHelp.replaceAll(v_TSName.getName() ,"C:\\迅雷下载\\" ,"http://127.0.0.1/msFile/file/play/demoVideo/")));
+        v_ETime = new Date();
+        $Logger.info("用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
+        $Logger.info("M3U8路径：" + v_M3U8Name + "。" );
     }
     
     
@@ -93,14 +127,14 @@ public class JU_VideoToM3U8
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        String        v_TSName      = VideoHelp.mp4ToTS("C:\\迅雷下载\\WZYB.mp4" ,"C:\\迅雷下载\\WZYB");
-        List<String>  v_SplitVideos = VideoHelp.splits(v_TSName ,"C:\\迅雷下载\\WZYB" ,8 ,27);
+        VideoInfo     v_TSName      = VideoHelp.mp4ToTS("C:\\迅雷下载\\WZYB.mp4" ,"C:\\迅雷下载\\WZYB");
+        List<String>  v_SplitVideos = VideoHelp.splits(v_TSName.getName() ,"C:\\迅雷下载\\WZYB" ,8 ,27);
         List<String>  v_M3U8Names   = new ArrayList<String>();
         StringBuilder v_M3U8All     = new StringBuilder();
         FileHelp      v_FileHelp    = new FileHelp();
         
         v_FileHelp.setOverWrite(true);
-        (new File(v_TSName)).delete();
+        (new File(v_TSName.getName())).delete();
         
         v_M3U8All.append("#EXTM3U\n");
         
