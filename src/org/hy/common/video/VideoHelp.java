@@ -659,6 +659,7 @@ public class VideoHelp
      */
     private static VideoInfo executeCommand(List<String> i_Command)
     {
+        VideoInfo         v_Video  = new VideoInfo();
         BufferedReader    v_Reader = null;
         InputStream       v_Input  = null;
         InputStreamReader v_InputR = null;
@@ -670,10 +671,9 @@ public class VideoHelp
             v_InputR = new InputStreamReader(v_Input);
             v_Reader = new BufferedReader(v_InputR);
             
-            VideoInfo v_Video          = new VideoInfo();
-            String    v_Line           = "";
-            boolean   v_IsFindDuration = false;    // 是否解释出时长
-            boolean   v_IsFindXY       = false;    // 是否解释出宽高
+            String  v_Line           = "";
+            boolean v_IsFindDuration = false;    // 是否解释出时长
+            boolean v_IsFindXY       = false;    // 是否解释出宽高
             while ( (v_Line=v_Reader.readLine())!=null )
             {
                 if ( Help.isNull(v_Line) )
@@ -742,12 +742,9 @@ public class VideoHelp
                         }
                     }
                 }
-                
-                if ( v_IsFindDuration && v_IsFindXY )
-                {
-                    return v_Video;
-                }
             }
+            
+            return v_Video;
         }
         catch (Exception e)
         {
