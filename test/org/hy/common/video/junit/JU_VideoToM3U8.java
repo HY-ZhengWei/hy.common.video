@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hy.common.Date;
 import org.hy.common.file.FileHelp;
 import org.hy.common.video.VideoHelp;
 import org.hy.common.xml.log.Logger;
@@ -29,16 +30,54 @@ public class JU_VideoToM3U8
     
     
     /**
-     * 生成只有一级索引的M3U8
+     * Mp4解码为TS，再TS转M3U8
      */
     @Test
-    public void toM3U8()
+    public void mp4ToTSToM3U8()
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\迅雷下载\\YinTian.mp4" ,"C:\\迅雷下载\\YinTian" ,3 ,"http://127.0.0.1/msFile/file/play/202012YinTian/");
+        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\迅雷下载\\Mary_Had_A Little_Lamb.mp4" ,"C:\\迅雷下载\\Mary_Had_A Little_Lamb" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
         
         $Logger.info("M3U8路径：" + v_M3U8Name);
+    }
+    
+    
+    
+    /**
+     * Flv解码为Mp4，Mp4解码为TS，再TS转M3U8
+     */
+    @Test
+    public void flvToMp4ToTSToM3U8()
+    {
+        VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
+        VideoHelp.$IsBebug    = false;
+        
+        Date   v_BTime    = new Date();
+        String v_Mp4Name  = VideoHelp.toMP4("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载" ,1280 ,720);
+        String v_M3U8Name = VideoHelp.mp4ToM3U8(v_Mp4Name ,"C:\\迅雷下载" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
+        Date   v_ETime    = new Date();
+        
+        $Logger.info("M3U8路径：" + v_M3U8Name + "。\t用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
+    }
+    
+    
+    
+    /**
+     * Flv解码为TS，再TS转M3U8
+     */
+    @Test
+    public void flvToTSToM3U8()
+    {
+        VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
+        VideoHelp.$IsBebug    = false;
+        
+        Date   v_BTime    = new Date();
+        String v_TSName   = VideoHelp.flvToTS("C:\\迅雷下载\\A.flv" ,"C:\\迅雷下载");
+        String v_M3U8Name = VideoHelp.tsToM3U8(v_TSName ,"C:\\迅雷下载" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
+        Date   v_ETime    = new Date();
+        
+        $Logger.info("M3U8路径：" + v_M3U8Name + "。\t用时：" + Date.toTimeLen(v_ETime.getTime() - v_BTime.getTime()));
     }
     
     

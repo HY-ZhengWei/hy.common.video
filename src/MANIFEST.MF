@@ -1,6 +1,6 @@
 Manifest-Version: 1.0.4
 Created-By: HY.ZhengWei@qq.com  2018
-Specification-Version: 1.0.4  2021-06-25
+Specification-Version: 1.0.4  2021-06-28
 SourceCode: https://github.com/HY-ZhengWei/hy.common.video
 SourceCodeChina: https://gitee.com/HY-ZhengWei/hy.common.video
 Build-JDK: 1.8

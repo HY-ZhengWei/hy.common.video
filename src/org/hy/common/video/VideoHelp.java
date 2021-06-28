@@ -25,6 +25,7 @@ import org.hy.common.xml.log.Logger;
  *              v2.0  2020-09-26  添加：获取视频信息（如，视频的宽度、高度）
  *              v3.0  2020-09-27  添加：将视频的前多少帧转换成一个动图（Animated Gif）
  *              v4.0  2021-06-21  添加：Mp4转M3U8(HLS)的视频
+ *              v5.0  2021-06-28  添加：Flv转M3U8(HLS)的视频
  */
 public class VideoHelp
 {
@@ -177,6 +178,69 @@ public class VideoHelp
             new PrintStream(videoProcess.getInputStream()).start();
             videoProcess.waitFor();
             return v_Ret;
+        }
+        catch (Exception e)
+        {
+            $Logger.error(e);
+            return null;
+        }
+    }
+    
+    
+    
+    /**
+     * 将视频FLV转为TS格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-28
+     * @version     v1.0
+     *
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @return               成功时返回生成的TS全路径
+     */
+    public static String flvToTS(String i_SourceFile ,String i_SavePath)
+    {
+        // ffmpeg -i C:\迅雷下载\a.flv -vcodec libx264 C:\迅雷下载\a.ts
+        // ffmpeg -i C:\迅雷下载\a.flv -c copy -bsf h264_mp4toannexb C:\迅雷下载\c.ts   不想编码的
+        
+        File v_SourceFile = new File(i_SourceFile);
+        if ( !v_SourceFile.isFile() )
+        {
+            $Logger.warn(i_SourceFile + " is not file");
+            return null;
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            $Logger.warn(i_SourceFile + " can not read");
+            return null;
+        }
+        
+        String v_FlvName = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_TSName  = i_SavePath + Help.getSysPathSeparator() + v_FlvName + ".ts";
+        
+        List<String> command = new ArrayList<String>();
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_SourceFile);
+        command.add("-vcodec");
+        command.add("libx264");
+        command.add(v_TSName);
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
+        
+        try
+        {
+            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
+            new PrintStream(videoProcess.getErrorStream()).start();
+            new PrintStream(videoProcess.getInputStream()).start();
+            videoProcess.waitFor();
+            return v_TSName;
         }
         catch (Exception e)
         {
