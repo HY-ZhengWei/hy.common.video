@@ -27,6 +27,8 @@ import org.hy.common.xml.log.Logger;
  *              v3.0  2020-09-27  添加：将视频的前多少帧转换成一个动图（Animated Gif）
  *              v4.0  2021-06-21  添加：Mp4转M3U8(HLS)的视频
  *              v5.0  2021-06-28  添加：Flv转M3U8(HLS)的视频
+ *              v6.0  2021-07-27  添加：H265转TS的视频
+ *                                添加：H264转TS的视频
  */
 public class VideoHelp
 {
@@ -216,6 +218,24 @@ public class VideoHelp
     }
     
     
+    /**
+     * 将视频FLV转为TS格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-06-28
+     * @version     v1.0
+     *
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @param i_FlvCodeType  视频编码（264、265）
+     * @return               成功时返回生成的TS全路径
+     */
+    public static VideoInfo flvToTS(String i_SourceFile ,String i_SavePath)
+    {
+        return flvToTS(i_SourceFile ,i_SavePath ,"264");
+    }
+    
+    
     
     /**
      * 将视频FLV转为TS格式的
@@ -226,9 +246,10 @@ public class VideoHelp
      *
      * @param i_SourceFile   原视频文件
      * @param i_SavePath     保存路径
+     * @param i_FlvCodeType  视频编码（264、265）
      * @return               成功时返回生成的TS全路径
      */
-    public static VideoInfo flvToTS(String i_SourceFile ,String i_SavePath)
+    public static VideoInfo flvToTS(String i_SourceFile ,String i_SavePath ,String i_FlvCodeType)
     {
         // ffmpeg -i C:\迅雷下载\a.flv -vcodec libx264 C:\迅雷下载\a.ts
         // ffmpeg -i C:\迅雷下载\a.flv -c copy -bsf h264_mp4toannexb C:\迅雷下载\c.ts   不想编码的
@@ -254,7 +275,7 @@ public class VideoHelp
         command.add("-i");                       // 如果输出文件已存在则覆盖
         command.add(i_SourceFile);
         command.add("-vcodec");
-        command.add("libx264");
+        command.add("libx" + i_FlvCodeType);
         command.add(v_TSName);
         
         VideoInfo v_Video = executeCommand(command);
@@ -377,6 +398,117 @@ public class VideoHelp
         command.add("copy");
         command.add("-vbsf");
         command.add("h264_mp4toannexb");
+        command.add(v_TSName);
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
+        
+        VideoInfo v_Video = executeCommand(command);
+        if ( v_Video != null )
+        {
+            v_Video.setName(v_TSName);
+        }
+        
+        return v_Video;
+    }
+    
+    
+    
+    /**
+     * 将视频H264转为TS格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-07-27
+     * @version     v1.0
+     *
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @return               成功时返回生成的TS全路径
+     */
+    public static VideoInfo h264ToTS(String i_SourceFile ,String i_SavePath)
+    {
+        File v_SourceFile = new File(i_SourceFile);
+        if ( !v_SourceFile.isFile() )
+        {
+            $Logger.warn(i_SourceFile + " is not file");
+            return null;
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            $Logger.warn(i_SourceFile + " can not read");
+            return null;
+        }
+        
+        String v_SName  = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_TSName = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_SName + ".ts";
+        
+        List<String> command = new ArrayList<String>();
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-use_wallclock_as_timestamps");
+        command.add("true");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_SourceFile);
+        command.add("-vcodec");
+        command.add("copy");
+        command.add(v_TSName);
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
+        
+        VideoInfo v_Video = executeCommand(command);
+        if ( v_Video != null )
+        {
+            v_Video.setName(v_TSName);
+        }
+        
+        return v_Video;
+    }
+    
+    
+    
+    /**
+     * 将视频H265转为TS格式的
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-07-27
+     * @version     v1.0
+     *
+     * @param i_SourceFile   原视频文件
+     * @param i_SavePath     保存路径
+     * @return               成功时返回生成的TS全路径
+     */
+    public static VideoInfo h265ToTS(String i_SourceFile ,String i_SavePath)
+    {
+        File v_SourceFile = new File(i_SourceFile);
+        if ( !v_SourceFile.isFile() )
+        {
+            $Logger.warn(i_SourceFile + " is not file");
+            return null;
+        }
+        else if ( !v_SourceFile.canRead() )
+        {
+            $Logger.warn(i_SourceFile + " can not read");
+            return null;
+        }
+        
+        String v_SName  = StringHelp.getFileShortName(v_SourceFile.getName());
+        String v_TSName = i_SavePath + (i_SavePath.endsWith(Help.getSysPathSeparator()) ? "" : Help.getSysPathSeparator()) + v_SName + ".ts";
+        
+        List<String> command = new ArrayList<String>();
+        
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-i");                       // 如果输出文件已存在则覆盖
+        command.add(i_SourceFile);
+        command.add("-vcodec");
+        command.add("hevc");
+        command.add("-y");
         command.add(v_TSName);
         
         if ( !$IsBebug )
@@ -685,6 +817,7 @@ public class VideoHelp
                 if ( !v_IsFindDuration )
                 {
                     // Duration: 00:00:58.26, start: 11720.738844, bitrate: 2032 kb/s
+                    // Duration: N/A, bitrate: N/A
                     boolean v_IsHaveDuration = StringHelp.isContains(v_Line ,true ,"Duration" ,",");
                     if ( v_IsHaveDuration )
                     {
