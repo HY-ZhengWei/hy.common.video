@@ -763,13 +763,13 @@ public class VideoHelp
      * 
      * @param i_RTSPUrl            RTSP视频流的地址
      * @param i_SaveM3U8FullName   保存M3U8文件的全路径
-     * @param i_TimeLen            分割ts文件的时长（单位：秒）。一般为2，保存可能为4秒一个段
+     * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
      * @return
      * 
      * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3
      *        -vcodec copy -y C:/VideoDatas/video.m3u8
      */
-    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TimeLen)
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_KeyFrameLen)
     {
         List<String> command = new ArrayList<String>();
 
@@ -783,7 +783,7 @@ public class VideoHelp
         command.add("-flags");
         command.add("-global_header");
         command.add("-hls_time");
-        command.add(i_TimeLen + "");
+        command.add(i_KeyFrameLen + "");
         command.add("-hls_list_size");
         command.add("3");
         command.add("-vcodec");
