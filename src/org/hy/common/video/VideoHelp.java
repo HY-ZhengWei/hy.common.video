@@ -29,6 +29,7 @@ import org.hy.common.xml.log.Logger;
  *              v5.0  2021-06-28  添加：Flv转M3U8(HLS)的视频
  *              v6.0  2021-07-27  添加：H265转TS的视频
  *                                添加：H264转TS的视频
+ *              v7.0  2021-08-07  添加：RTSP码流直转M3U8(HLS)的视频
  */
 public class VideoHelp
 {
@@ -94,19 +95,8 @@ public class VideoHelp
             command.add("quiet");
         }
         
-        try
-        {
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
-            new PrintStream(videoProcess.getErrorStream()).start();
-            new PrintStream(videoProcess.getInputStream()).start();
-            videoProcess.waitFor();
-            return true;
-        }
-        catch (Exception e)
-        {
-            $Logger.error(e);
-            return false;
-        }
+        Process v_VideoProcess = executeCommand(command ,true);
+        return v_VideoProcess != null;
     }
     
     
@@ -727,19 +717,8 @@ public class VideoHelp
             command.add("quiet");
         }
         
-        try
-        {
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
-            new PrintStream(videoProcess.getErrorStream()).start();
-            new PrintStream(videoProcess.getInputStream()).start();
-            videoProcess.waitFor();
-            return true;
-        }
-        catch (Exception e)
-        {
-            $Logger.error(e);
-            return false;
-        }
+        Process v_VideoProcess = executeCommand(command ,true);
+        return v_VideoProcess != null;
     }
     
     
@@ -775,6 +754,113 @@ public class VideoHelp
         command.add(i_VideoFile);
         
         return executeCommand(command);
+    }
+    
+    
+    
+    /**
+     * 解析RTSP视频流，转换为HLS直播流
+     * 
+     * @param i_RTSPUrl            RTSP视频流的地址
+     * @param i_SaveM3U8FullName   保存M3U8文件的全路径
+     * @param i_TimeLen            分割ts文件的时长（单位：秒）。一般为2，保存可能为4秒一个段
+     * @return
+     * 
+     * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3
+     *        -vcodec copy -y C:/VideoDatas/video.m3u8
+     */
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TimeLen)
+    {
+        List<String> command = new ArrayList<String>();
+
+        command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-i");
+        command.add(i_RTSPUrl);
+        command.add("-fflags");
+        command.add("flush_packets");
+        command.add("-max_delay");
+        command.add("2");
+        command.add("-flags");
+        command.add("-global_header");
+        command.add("-hls_time");
+        command.add(i_TimeLen + "");
+        command.add("-hls_list_size");
+        command.add("3");
+        command.add("-vcodec");
+        command.add("copy");
+        command.add("-y");
+        command.add(i_SaveM3U8FullName);
+        
+        if ( !$IsBebug )
+        {
+            command.add("-loglevel");
+            command.add("quiet");
+        }
+        
+        return executeCommand(command ,false ,new RTSPPrintStream());
+    }
+    
+    
+    
+    /**
+     * 执行并解释命令
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-08-07
+     * @version     v1.0
+     * 
+     * @param i_Command  执行的命令
+     * @param i_IsWait   是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
+     * @return           允许外部关闭CMD执行进程
+     */
+    private static Process executeCommand(List<String> i_Command ,boolean i_IsWait)
+    {
+        return executeCommand(i_Command ,i_IsWait ,null);
+    }
+    
+    
+    
+    /**
+     * 执行并解释命令
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2021-08-07
+     * @version     v1.0
+     * 
+     * @param i_Command      执行的命令
+     * @param i_IsWait       是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
+     * @param i_PrintStream  执行命令结果的输出流
+     * @return
+     */
+    private static Process executeCommand(List<String> i_Command ,boolean i_IsWait ,PrintStream i_PrintStream)
+    {
+        try
+        {
+            Process v_VideoProcess = new ProcessBuilder(i_Command).redirectErrorStream(true).start();
+            new PrintStream(v_VideoProcess.getErrorStream()).start();
+            
+            if ( i_PrintStream == null )
+            {
+                new PrintStream(v_VideoProcess.getInputStream()).start();
+            }
+            else
+            {
+                i_PrintStream.setInputStream(v_VideoProcess.getInputStream()).start();
+            }
+            
+            if ( i_IsWait )
+            {
+                v_VideoProcess.waitFor();
+            }
+            
+            return v_VideoProcess;
+        }
+        catch (Exception e)
+        {
+            $Logger.error(e);
+        }
+        
+        return null;
     }
     
     
