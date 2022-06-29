@@ -51,6 +51,37 @@ public class JU_002_ReadImage
     
     
     @Test
+    public void readImage_threshold()
+    {
+        Mat v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_002_ReadImage.jpg").getFile().substring(1));
+        Mat v_MTarget = new Mat();
+        
+        HighGui.imshow("原图显示" ,v_MSource);
+        HighGui.waitKey(0);
+        
+        Imgproc.cvtColor(v_MSource ,v_MTarget ,Imgproc.COLOR_RGB2GRAY);   // 灰度图
+        
+        HighGui.imshow("灰度图显示" ,v_MTarget);
+        HighGui.waitKey(0);
+        
+        Imgproc.threshold(v_MTarget ,v_MTarget ,125 ,255 ,Imgproc.THRESH_BINARY);    // 二值化：大于125的值变成255，否则变成0
+        /*
+            Imgproc.THRESH_BINARY：当像素值超过闽值thresh时取 maxval，否则取0；
+            Imgproc.THRESH BINARY INV:Imgproc.THRESH BINARY的反转；
+            Imgproc.THRESH_TRUNC：大于阀值时设为阀值，否则不变；
+            Imgproc.IHRESHIOZERO：大于阈估时不变，否则设为0；
+            Imgproc.THRESH_TOZERO_INV:Imgproc.THRESH_TOZERO的反转；
+         */
+        
+        HighGui.imshow("二值化显示" ,v_MTarget);
+        HighGui.waitKey(0);                      // 等待X毫秒；0表示：任意键退出
+        
+        $Logger.info(v_MTarget);
+    }
+    
+    
+    
+    @Test
     public void readImage_bitwise_not()
     {
         Mat v_Mat01 = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_002_ReadImage.jpg").getFile().substring(1));
@@ -186,37 +217,6 @@ public class JU_002_ReadImage
         Imgproc.blur(v_MSource ,v_MTarget ,new Size(5 ,5));   // 均值滤波
         
         HighGui.imshow("均值滤波" ,v_MTarget);
-        HighGui.waitKey(0);                      // 等待X毫秒；0表示：任意键退出
-        
-        $Logger.info(v_MTarget);
-    }
-    
-    
-    
-    @Test
-    public void readImage_threshold()
-    {
-        Mat v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_002_ReadImage.jpg").getFile().substring(1));
-        Mat v_MTarget = new Mat();
-        
-        HighGui.imshow("原图显示" ,v_MSource);
-        HighGui.waitKey(0);
-        
-        Imgproc.cvtColor(v_MSource ,v_MTarget ,Imgproc.COLOR_RGB2GRAY);   // 灰度图
-        
-        HighGui.imshow("灰度图显示" ,v_MTarget);
-        HighGui.waitKey(0);
-        
-        Imgproc.threshold(v_MTarget ,v_MTarget ,125 ,255 ,Imgproc.THRESH_BINARY);    // 二值化：大于125的值变成255，否则变成0
-        /*
-            Imgproc.THRESH_BINARY：当像素值超过闽值thresh时取 maxval，否则取0；
-            Imgproc.THRESH BINARY INV:Imgproc.THRESH BINARY的反转；
-            Imgproc.THRESH_TRUNC：大于阀值时设为阀值，否则不变；
-            Imgproc.IHRESHIOZERO：大于阈估时不变，否则设为0；
-            Imgproc.THRESH_TOZERO_INV:Imgproc.THRESH_TOZERO的反转；
-         */
-        
-        HighGui.imshow("二值化显示" ,v_MTarget);
         HighGui.waitKey(0);                      // 等待X毫秒；0表示：任意键退出
         
         $Logger.info(v_MTarget);
