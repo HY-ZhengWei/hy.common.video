@@ -39,7 +39,7 @@ public class JU_004_Perspective
     public void perspective()
     {
         // 读取图片
-        Mat      v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_004_Perspective.png").getFile().substring(1));
+        Mat      v_MSource = Imgcodecs.imread(JU_004_Perspective.class.getResource("JU_004_Perspective.png").getFile().substring(1));
         Mat      v_MTarget = new Mat();
         Point [] v_PSource = new Point[4];
         Point [] v_PTarget = new Point[4];

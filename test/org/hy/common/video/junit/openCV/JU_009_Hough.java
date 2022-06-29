@@ -37,7 +37,7 @@ public class JU_009_Hough
     @Test
     public void HoughLines()
     {
-        Mat v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_004_Perspective.png").getFile().substring(1));
+        Mat v_MSource = Imgcodecs.imread(JU_009_Hough.class.getResource("JU_004_Perspective.png").getFile().substring(1));
         Mat v_MTarget = new Mat();
         
         HighGui.imshow("原图" ,v_MSource);
@@ -77,7 +77,7 @@ public class JU_009_Hough
     @Test
     public void HoughCircles()
     {
-        Mat v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_004_Perspective.png").getFile().substring(1));
+        Mat v_MSource = Imgcodecs.imread(JU_009_Hough.class.getResource("JU_004_Perspective.png").getFile().substring(1));
         Mat v_MTarget = new Mat();
         
         HighGui.imshow("原图" ,v_MSource);

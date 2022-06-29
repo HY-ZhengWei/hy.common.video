@@ -37,8 +37,8 @@ public class JU_008_Template
     @Test
     public void matchTemplate()
     {
-        Mat v_MSource   = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_008_Template_Big.jpg"  ).getFile().substring(1));
-        Mat v_MTemplate = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_008_Template_Small.jpg").getFile().substring(1));
+        Mat v_MSource   = Imgcodecs.imread(JU_008_Template.class.getResource("JU_008_Template_Big.jpg"  ).getFile().substring(1));
+        Mat v_MTemplate = Imgcodecs.imread(JU_008_Template.class.getResource("JU_008_Template_Small.jpg").getFile().substring(1));
         Mat v_MTarget   = new Mat();
         
         HighGui.imshow("原图" ,v_MSource);

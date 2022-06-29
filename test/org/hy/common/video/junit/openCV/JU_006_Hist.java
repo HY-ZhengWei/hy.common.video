@@ -44,7 +44,7 @@ public class JU_006_Hist
     public void calcHist()
     {
         // 读取图片，并按灰度图读取
-        Mat v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_006_Hist.jpg").getFile().substring(1) ,Imgcodecs.IMREAD_GRAYSCALE);
+        Mat v_MSource = Imgcodecs.imread(JU_006_Hist.class.getResource("JU_006_Hist.jpg").getFile().substring(1) ,Imgcodecs.IMREAD_GRAYSCALE);
         HighGui.imshow("灰度图" ,v_MSource);
         HighGui.waitKey(0);
         
@@ -87,7 +87,7 @@ public class JU_006_Hist
     public void equalizeHist()
     {
         // 读取图片，并按灰度图读取
-        Mat v_MSource = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_006_Hist.jpg").getFile().substring(1) ,Imgcodecs.IMREAD_GRAYSCALE);
+        Mat v_MSource = Imgcodecs.imread(JU_006_Hist.class.getResource("JU_006_Hist.jpg").getFile().substring(1) ,Imgcodecs.IMREAD_GRAYSCALE);
         Mat v_MTarget = new Mat();
         HighGui.imshow("灰度图" ,v_MSource);
         HighGui.waitKey(0);
