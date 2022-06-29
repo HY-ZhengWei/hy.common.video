@@ -20,9 +20,9 @@ public class JU_VideoToGif
     @Test
     public void test_ToGif()
     {
-        VideoHelp.$FFMpegHome = "D:\\WorkSpace_SearchDesktop\\hy.common.video\\ffmpeg-4.1-win64-static";
+        VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        VideoHelp.toGif("E:\\迅雷下载\\外国小姐姐翻唱《李白》.mp4" ,"E:\\迅雷下载\\liBai.gif" ,24 * 10 ,"640x480");
+        VideoHelp.toGif("C:\\Users\\hyzhe\\Desktop\\1.mp4" ,"C:\\Users\\hyzhe\\Desktop\\1.gif" ,24 * 44 ,"640x320");
     }
     
 }

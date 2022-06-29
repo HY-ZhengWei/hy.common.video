@@ -36,9 +36,17 @@ public class VideoHelp
     
     private static final Logger $Logger = new Logger(VideoHelp.class);
     
+    /** FFMpeg的主目录 */
     public static String  $FFMpegHome;
     
-    public static boolean $IsBebug = true;
+    /** 是否输出调试日志 */
+    public static boolean $IsBebug           = true;
+    
+    /** 是不是解释FFMpeg的输出信息，如解释视频大小等 */
+    public static boolean $IsParserVideoInfo = true;
+    
+    /** 控制X264的速度 */
+    public static String  $X264Level         = "superfast";
     
     
     
@@ -266,6 +274,13 @@ public class VideoHelp
         command.add(i_SourceFile);
         command.add("-vcodec");
         command.add("libx" + i_FlvCodeType);
+        
+        if ( !Help.isNull($X264Level) )  // 速度优化
+        {
+            command.add("-preset");
+            command.add($X264Level);
+        }
+        
         command.add(v_TSName);
         
         VideoInfo v_Video = executeCommand(command);
@@ -388,6 +403,13 @@ public class VideoHelp
         command.add("copy");
         command.add("-vbsf");
         command.add("h264_mp4toannexb");
+        
+        if ( !Help.isNull($X264Level) )  // 速度优化
+        {
+            command.add("-preset");
+            command.add($X264Level);
+        }
+        
         command.add(v_TSName);
         
         if ( !$IsBebug )
@@ -444,6 +466,13 @@ public class VideoHelp
         command.add(i_SourceFile);
         command.add("-vcodec");
         command.add("copy");
+        
+        if ( !Help.isNull($X264Level) )  // 速度优化
+        {
+            command.add("-preset");
+            command.add($X264Level);
+        }
+        
         command.add(v_TSName);
         
         if ( !$IsBebug )
@@ -499,6 +528,13 @@ public class VideoHelp
         command.add("-vcodec");
         command.add("hevc");
         command.add("-y");
+        
+        if ( !Help.isNull($X264Level) )  // 速度优化
+        {
+            command.add("-preset");
+            command.add($X264Level);
+        }
+        
         command.add(v_TSName);
         
         if ( !$IsBebug )
@@ -763,32 +799,63 @@ public class VideoHelp
      * 
      * @param i_RTSPUrl            RTSP视频流的地址
      * @param i_SaveM3U8FullName   保存M3U8文件的全路径
+     * @param i_TsListSize         M3U8文件中的ts文件的数量
      * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
+     * @param i_IsWait             是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
      * @return
      * 
-     * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3
-     *        -vcodec copy -y C:/VideoDatas/video.m3u8
+     * 星探
+     * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3 -vcodec copy -y C:/VideoDatas/video.m3u8
+     * 
+     * 华为
+     * ffmpeg -f rtsp -rtsp_transport tcp -i rtsp://IP:Port/LiveMedia/ch1/Media1 -codec copy -f hls -hls_list_size 3 -hls_wrap 20 -hls_time 15 D:\VideoDatas\video.m3u8
      */
-    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_KeyFrameLen)
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen)
+    {
+        return rtspToM3U8(i_RTSPUrl ,i_SaveM3U8FullName ,i_TsListSize ,i_KeyFrameLen ,false);
+    }
+    
+    
+    
+    /**
+     * 解析RTSP视频流，转换为HLS直播流
+     * 
+     * @param i_RTSPUrl            RTSP视频流的地址
+     * @param i_SaveM3U8FullName   保存M3U8文件的全路径
+     * @param i_TsListSize         M3U8文件中的ts文件的数量
+     * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
+     * @param i_IsWait             是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
+     * @return
+     * 
+     * 星探
+     * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3 -vcodec copy -y C:/VideoDatas/video.m3u8
+     * 
+     * 华为
+     * ffmpeg -f rtsp -rtsp_transport tcp -i rtsp://IP:Port/LiveMedia/ch1/Media1 -codec copy -f hls -hls_list_size 3 -hls_wrap 20 -hls_time 15 D:\VideoDatas\video.m3u8
+     */
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen ,boolean i_IsWait)
     {
         List<String> command = new ArrayList<String>();
 
         command.add($FFMpegHome + Help.getSysPathSeparator() + "bin" + Help.getSysPathSeparator() + "ffmpeg");
+        command.add("-f");
+        command.add("rtsp");
+        command.add("-rtsp_transport");
+        command.add("tcp");
+        command.add("-max_delay");
+        command.add("10000");
         command.add("-i");
         command.add(i_RTSPUrl);
-        command.add("-fflags");
-        command.add("flush_packets");
-        command.add("-max_delay");
-        command.add("2");
-        command.add("-flags");
-        command.add("-global_header");
+        command.add("-codec");
+        command.add("copy");
+        command.add("-f");
+        command.add("hls");
+        command.add("-hls_list_size");
+        command.add(i_TsListSize + "");
+        command.add("-hls_wrap");
+        command.add("20");
         command.add("-hls_time");
         command.add(i_KeyFrameLen + "");
-        command.add("-hls_list_size");
-        command.add("3");
-        command.add("-vcodec");
-        command.add("copy");
-        command.add("-y");
         command.add(i_SaveM3U8FullName);
         
         if ( !$IsBebug )
@@ -797,7 +864,7 @@ public class VideoHelp
             command.add("quiet");
         }
         
-        return executeCommand(command ,false ,new RTSPPrintStream());
+        return executeCommand(command ,i_IsWait ,new RTSPPrintStream());
     }
     
     
@@ -894,6 +961,11 @@ public class VideoHelp
             boolean v_IsFindXY       = false;    // 是否解释出宽高
             while ( (v_Line=v_Reader.readLine())!=null )
             {
+                if ( !$IsParserVideoInfo )
+                {
+                    continue;
+                }
+                
                 if ( Help.isNull(v_Line) )
                 {
                     continue;
@@ -933,13 +1005,14 @@ public class VideoHelp
                 if ( !v_IsFindXY )
                 {
                     // Stream #0:0[0x1e0]: Video: h264 (Main), yuvj420p(pc, bt709, progressive), 1280x720, 22 fps, 25 tbr, 90k tbn, 44 tbc
+                    // Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p, 1280x720 [SAR 1:1 DAR 16:9], 497 kb/s, 25 fps, 25 tbr, 12800 tbn, 50 tbc (default)
                     boolean v_IsHaveX = StringHelp.isContains(v_Line ,true ,"x" ,",");
                     if ( v_IsHaveX )
                     {
                         String [] v_LinePamas = v_Line.trim().split(",");
                         for (String v_LP : v_LinePamas)
                         {
-                            String [] v_NameValue = v_LP.split("x");
+                            String [] v_NameValue = v_LP.trim().split(" ")[0].split("x");
                             if ( v_NameValue.length == 2 )
                             {
                                 v_NameValue[0] = v_NameValue[0].trim();

@@ -39,7 +39,7 @@ public class JU_VideoToM3U8
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\迅雷下载\\Mary_Had_A Little_Lamb.mp4" ,"C:\\迅雷下载\\Mary_Had_A Little_Lamb" ,10 ,"http://127.0.0.1/msFile/file/play/demoVideo/");
+        String v_M3U8Name = VideoHelp.mp4ToM3U8("D:\\大数据下载\\FMS.mp4" ,"D:\\大数据下载\\FMS" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
         
         $Logger.info("M3U8路径：" + v_M3U8Name);
     }
@@ -116,6 +116,16 @@ public class JU_VideoToM3U8
     
     
     
+    @Test
+    public void mp4ToTS()
+    {
+        VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
+        
+        VideoHelp.mp4ToTS("C:\\素材库\\loading.mp4" ,"C:\\素材库\\loading");
+    }
+    
+    
+    
     /**
      * 生成两级索引的M3U8
      * 
@@ -127,8 +137,8 @@ public class JU_VideoToM3U8
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        VideoInfo     v_TSName      = VideoHelp.mp4ToTS("C:\\迅雷下载\\WZYB.mp4" ,"C:\\迅雷下载\\WZYB");
-        List<String>  v_SplitVideos = VideoHelp.splits(v_TSName.getName() ,"C:\\迅雷下载\\WZYB" ,8 ,27);
+        VideoInfo     v_TSName      = VideoHelp.mp4ToTS("C:\\素材库\\loading.mp4" ,"C:\\素材库\\loading");
+        List<String>  v_SplitVideos = VideoHelp.splits(v_TSName.getName() ,"C:\\素材库\\loading" ,8 ,27);
         List<String>  v_M3U8Names   = new ArrayList<String>();
         StringBuilder v_M3U8All     = new StringBuilder();
         FileHelp      v_FileHelp    = new FileHelp();
@@ -140,7 +150,7 @@ public class JU_VideoToM3U8
         
         for (String v_SName : v_SplitVideos)
         {
-            String v_M3U8Name = VideoHelp.tsToM3U8(v_SName ,"C:\\迅雷下载\\WZYB" ,3);
+            String v_M3U8Name = VideoHelp.tsToM3U8(v_SName ,"C:\\素材库\\loading" ,3);
             
             v_M3U8Names.add(v_M3U8Name);
             v_M3U8All.append("#EXT-X-STREAM-INF:PROGRAM-ID=1\n");
@@ -150,7 +160,7 @@ public class JU_VideoToM3U8
             (new File(v_SName)).delete();
         }
         
-        v_FileHelp.create("C:\\迅雷下载\\WZYB\\WZYB.m3u8" ,v_M3U8All.toString());
+        v_FileHelp.create("C:\\素材库\\loading\\loading.m3u8" ,v_M3U8All.toString());
         
         $Logger.info("M3U8路径：" + v_M3U8Names);
     }

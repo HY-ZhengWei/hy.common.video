@@ -29,6 +29,7 @@ public class JU_VideoRTSPToM3U8
         
         Process v_VideoProcess = VideoHelp.rtspToM3U8("rtsp://10.1.130.51:554/live/0/MAIN"
                                                 ,"C:\\VideoDatas\\TingChe1\\2021-08-07\\20210807.m3u8"
+                                                ,5
                                                 ,2);
         
         $Logger.info("执行中：");

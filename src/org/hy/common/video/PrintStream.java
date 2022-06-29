@@ -87,7 +87,7 @@ public class PrintStream extends Thread
             {
                 if ( isPrint(v_Line) )
                 {
-                    System.out.println(v_Line);
+                    $Logger.info(v_Line);
                 }
             }
         }
