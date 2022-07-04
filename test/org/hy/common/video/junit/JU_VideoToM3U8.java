@@ -39,7 +39,8 @@ public class JU_VideoToM3U8
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
-        String v_M3U8Name = VideoHelp.mp4ToM3U8("D:\\大数据下载\\FMS.mp4" ,"D:\\大数据下载\\FMS" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
+        //String v_M3U8Name = VideoHelp.mp4ToM3U8("D:\\大数据下载\\FMS.mp4" ,"D:\\大数据下载\\FMS" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
+        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\素材库\\101_7_1.mp4" ,"C:\\\\素材库" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
         
         $Logger.info("M3U8路径：" + v_M3U8Name);
     }

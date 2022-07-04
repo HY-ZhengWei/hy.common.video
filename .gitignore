@@ -3,3 +3,4 @@
 *.mp4
 test/inputPath/20180919-WZYB-3.mpg
 *.mpg
+/lib/OCR/5.2.1/tessdata
