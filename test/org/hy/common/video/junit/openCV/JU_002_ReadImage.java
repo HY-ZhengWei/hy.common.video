@@ -41,6 +41,15 @@ public class JU_002_ReadImage
     public void readImage()
     {
         // 读取图片
+        /*
+         * IMREAD_UNCHANGED = -1 ：不进行转化，比如保存为了16位的图片，读取出来仍然为16位。
+         * IMREAD_GRAYSCALE = 0 ：进行转化为灰度图，比如保存为了16位的图片，读取出来为8位，类型为CV_8UC1。
+         * IMREAD_COLOR = 1 ：进行转化为三通道图像。
+         * IMREAD_ANYDEPTH = 2 ：如果图像深度为16位则读出为16位，32位则读出为32位，其余的转化为8位。
+         * IMREAD_ANYCOLOR = 4 ：图像以任何可能的颜色格式读取
+         * IMREAD_LOAD_GDAL = 8 ：使用GDAL驱动读取文件，GDAL(Geospatial Data Abstraction
+         * Library)是一个在X/MIT许可协议下的开源栅格空间数据转换库。它利用抽象数据模型来表达所支持的各种文件格式。它还有一系列命令行工具来进行数据转换和处理。
+         */
         Mat v_Mat = Imgcodecs.imread(JU_002_ReadImage.class.getResource("JU_002_ReadImage.jpg").getFile().substring(1));
         HighGui.imshow("标题" ,v_Mat);           // 在屏幕上显示图像
         HighGui.waitKey(0);                      // 等待X毫秒；0表示：任意键退出
