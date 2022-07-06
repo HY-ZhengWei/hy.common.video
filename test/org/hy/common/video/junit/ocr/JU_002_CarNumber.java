@@ -190,7 +190,7 @@ public class JU_002_CarNumber
         
         v_MStart = v_MEnd;
         v_MEnd   = newMat("OCR-灰度图");
-        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_BGR2GRAY);
         HighGui.imshow("OCR-灰度图" ,v_MEnd);
         HighGui.waitKey(0);
         
@@ -255,7 +255,7 @@ public class JU_002_CarNumber
         v_Name   = ++v_Step + "灰度";
         v_MStart = v_MEnd;
         v_MEnd   = newMat(v_Name);
-        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_BGR2GRAY);
         //HighGui.imshow(v_Name ,v_MEnd);
         
         v_Name   = ++v_Step + "高斯模糊";
@@ -464,7 +464,7 @@ public class JU_002_CarNumber
         
         v_MStart = v_MEnd;
         v_MEnd   = newMat("灰度图");
-        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_BGR2GRAY);
         HighGui.imshow("灰度图" ,v_MEnd);
         HighGui.waitKey(0);
         
@@ -741,7 +741,7 @@ public class JU_002_CarNumber
         
         v_MStart = v_MEnd;
         v_MEnd   = newMat("灰度图");
-        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_BGR2GRAY);
         HighGui.imshow("灰度图" ,v_MEnd);
         HighGui.waitKey(0);
         
@@ -837,7 +837,7 @@ public class JU_002_CarNumber
         
         v_MStart = v_MEnd;
         v_MEnd   = newMat("灰度图");
-        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_BGR2GRAY);
         HighGui.imshow("灰度图" ,v_MEnd);
         HighGui.waitKey(0);
         

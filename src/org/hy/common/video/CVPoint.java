@@ -35,6 +35,23 @@ public class CVPoint
     
     
     
+    @Override
+    public CVPoint clone()
+    {
+        CVPoint v_New = new CVPoint();
+        
+        v_New.setX(   this.x);
+        v_New.setXMin(this.xMin);
+        v_New.setXMax(this.xMax);
+        v_New.setY(   this.y);
+        v_New.setYMin(this.yMin);
+        v_New.setYMax(this.yMax);
+        
+        return v_New;
+    }
+    
+    
+    
     /**
      * 剪裁右侧
      * 

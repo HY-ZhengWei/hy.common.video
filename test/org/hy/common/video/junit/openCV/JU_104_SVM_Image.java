@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -15,6 +17,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.ml.Ml;
 import org.opencv.ml.SVM;
 import org.opencv.ml.TrainData;
+import org.opencv.objdetect.HOGDescriptor;
 
 
 
@@ -62,13 +65,93 @@ public class JU_104_SVM_Image
         trainData(v_SVMFile);
         
         SVM v_SVM = loadSVM(v_SVMFile);
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/1-001.jpg").getFile().substring(1));
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/2-001.jpg").getFile().substring(1));
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-001.jpg").getFile().substring(1));
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-002.jpg").getFile().substring(1));
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-003.jpg").getFile().substring(1));
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-004.jpg").getFile().substring(1));
-        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-005.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/1-001.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/2-001.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-001.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-002.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-003.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-004.jpg").getFile().substring(1));
+//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-005.jpg").getFile().substring(1));
+        
+        
+        predict(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-005.jpg").getFile().substring(1));
+        
+    }
+    
+    
+    
+    public static float predict(SVM i_SVM ,String i_ImageName)
+    {
+        Mat      v_MImage  = Imgcodecs.imread(i_ImageName);
+        
+        Imgproc.cvtColor(v_MImage ,v_MImage ,Imgproc.COLOR_RGB2GRAY);
+        v_MImage.convertTo(v_MImage, CvType.CV_32FC1);
+        
+        float [] v_HogData = getHOG(v_MImage);
+        float    v_Ret     = predict(i_SVM ,v_HogData);
+        
+        $Logger.info("" + v_Ret);
+        
+        return v_Ret;
+    }
+    
+    
+    
+    public static float predict(SVM i_SVM ,float hog[])
+    {
+        Mat predictMat = new Mat();
+        predictMat.create(1, hog.length, CvType.CV_32FC1);
+        predictMat.put(0, 0, hog);
+        return i_SVM.predict(predictMat); //预测结果
+    }
+    
+    
+    
+    public static float[] getHOG(Mat src)
+    {
+        //灰度以及梯度处理
+        src = getGradient(src);
+        Imgproc.resize(src, src, new Size($TranWidth, $TranHeight), 0, 0, Imgproc.INTER_AREA);
+        
+        
+        Size    v_WinSize           = new Size($TranWidth ,$TranHeight);           // 图像大小
+        Size    v_BlockSize         = new Size(16 ,16);              // 每一个Cell是 8*8 的，四个Cell组成一个Block，所以Block是16*16
+        Size    v_BlockStride       = new Size(8 ,8);                // 移动一个Cell是多少，永远与Cell是同步
+        Size    v_CellSize          = new Size(8 ,8);
+        int     v_NBins             = 9;
+        HOGDescriptor hogDescriptor = new HOGDescriptor(v_WinSize ,v_BlockSize ,v_BlockStride ,v_CellSize ,v_NBins);
+        
+        MatOfFloat descriptorsValues = new MatOfFloat();
+        MatOfPoint locations = new MatOfPoint();
+        //计算 Hog 特征值
+        hogDescriptor.compute(src, descriptorsValues, new Size(0, 0), new Size(0, 0), locations);
+        //特征值维数
+        int size = (int) (descriptorsValues.total() * descriptorsValues.channels());
+        float[] temp = new float[size];
+        descriptorsValues.get(0, 0, temp);
+        //特征数组
+        float[] resArrays = descriptorsValues.toArray();
+        return resArrays;
+    }
+    
+    
+    
+    public static Mat getGradient(Mat src) {
+        Mat grayMat =  src;
+        // 灰度
+        // Imgproc.cvtColor(src, grayMat, Imgproc.COLOR_BGR2GRAY, 0);
+        //梯度计算
+        Mat x = new Mat(); //X 方向梯度值矩阵
+        Mat y = new Mat(); //Y 方向梯度值矩阵
+        //计算 X,Y 方向绝对梯度
+        Imgproc.Sobel(grayMat, x, -1, 1, 0, 3, 1, 0);
+        Core.convertScaleAbs(x, x);
+        Imgproc.Sobel(grayMat, y, -1, 0, 1, 3, 1, 0);
+        Core.convertScaleAbs(y, y);
+        //XY 综合梯度
+        Core.addWeighted(x, 0.5, y, 0.5, 0, grayMat);
+
+        return grayMat;
     }
     
     
