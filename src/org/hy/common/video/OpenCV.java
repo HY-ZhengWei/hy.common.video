@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hy.common.Help;
-import org.hy.common.video.junit.ocr.LPRInfo;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -12,6 +11,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class OpenCV
@@ -52,6 +52,30 @@ public class OpenCV
         $LPRCVColors.add(new CVColor("黄牌" ,v_YellowLowerColor ,v_YellowUpperColor ,44D / 14D ,7));
         $LPRCVColors.add(new CVColor("蓝牌" ,v_BlueLowerColor   ,v_BlueUpperColor   ,44D / 14D ,7));
         $LPRCVColors.add(new CVColor("绿牌" ,v_GreenLowerColor  ,v_GreenUpperColor  ,48D / 14D ,9));
+    }
+    
+    
+    
+    public static double resizeHeight(Mat i_MSource ,Mat io_MTarget ,int i_Height)
+    {
+        double v_Scale  = Help.division(i_Height ,i_MSource.height());
+        int    v_Width  = (int)(i_MSource.width() * v_Scale);
+        
+        Imgproc.resize(i_MSource ,io_MTarget ,new Size(v_Width ,i_Height));
+        
+        return v_Scale;
+    }
+    
+    
+    
+    public static double resizeWidth(Mat i_MSource ,Mat i_MTarget ,int i_Width)
+    {
+        double v_Scale  = Help.division(i_Width ,i_MSource.width());
+        int    v_Height = (int)(i_MSource.height() * v_Scale);
+        
+        Imgproc.resize(i_MSource ,i_MTarget ,new Size(i_Width ,v_Height));
+        
+        return v_Scale;
     }
     
     
@@ -172,7 +196,7 @@ public class OpenCV
      * @param i_Contours
      * @return
      */
-    public static List<CVPoint> contoursMaxRectangle(List<MatOfPoint> i_Contours)
+    public static List<CVPoint> contoursMaxRectangle(List<MatOfPoint> i_Contours ,double i_Scale)
     {
         List<CVPoint> v_Ret = new ArrayList<CVPoint>();
         
@@ -183,7 +207,7 @@ public class OpenCV
             
             for (Point v_P : v_PArr)
             {
-                v_CVP.setMaxMin(v_P);
+                v_CVP.setMaxMin(v_P ,i_Scale);
             }
             
             v_Ret.add(v_CVP);

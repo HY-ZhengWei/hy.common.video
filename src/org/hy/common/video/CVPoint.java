@@ -163,12 +163,12 @@ public class CVPoint
      * 
      * @param i_Point
      */
-    public void setMaxMin(Point i_Point)
+    public void setMaxMin(Point i_Point ,double i_Scale)
     {
-        this.setXMin(i_Point.x);
-        this.setXMax(i_Point.x);
-        this.setYMin(i_Point.y);
-        this.setYMax(i_Point.y);
+        this.setXMin(i_Point.x / i_Scale);
+        this.setXMax(i_Point.x / i_Scale);
+        this.setYMin(i_Point.y / i_Scale);
+        this.setYMax(i_Point.y / i_Scale);
     }
 
     

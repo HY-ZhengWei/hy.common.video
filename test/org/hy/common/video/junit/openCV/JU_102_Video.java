@@ -80,7 +80,7 @@ public class JU_102_Video
     {
         VideoCapture v_VideoCapture = new VideoCapture();
         
-        v_VideoCapture.open(JU_101_Document.class.getResource("JU_102_Video.ts").getFile().substring(1));
+        v_VideoCapture.open(JU_102_Video.class.getResource("JU_102_Video.ts").getFile().substring(1));
         
         List<Mat>     v_VideoDatas = new ArrayList<Mat>();
         Mat           v_VideoImg = new Mat();
@@ -111,6 +111,16 @@ public class JU_102_Video
         v_VideoCapture.release();  // 释放内存
         
         
+        /*
+        cv_FOURCC(‘D’,‘I’,‘V’,‘X’)  MPEG-4编码
+        CV_FOURCC(‘P’,‘I’,‘M’,‘1’)  MPEG-1编码
+        CV_FOURCC(‘M’,‘J’,‘P’,‘G’)  JPEG编码（运行效果一般）
+        CV_FOURCC(‘M’, ‘P’, ‘4’, ‘2’)   MPEG-4.2编码
+        CV_FOURCC(‘D’, ‘I’, ‘V’, ‘3’)   MPEG-4.3编码
+        CV_FOURCC(‘U’, ‘2’, ‘6’, ‘3’)   H263编码
+        CV_FOURCC(‘I’, ‘2’, ‘6’, ‘3’)   H263I编码
+        CV_FOURCC(‘F’, ‘L’, ‘V’, ‘1’)   FLV1编码
+        */
         
         VideoWriter v_VideoWrite = new VideoWriter();
         Size v_VidoeSize   = new Size();
@@ -131,7 +141,13 @@ public class JU_102_Video
     public List<CVPoint> aiColor(Mat i_MSource ,Scalar i_LowerColor ,Scalar i_UpperColor)
     {
         Mat v_MTarget = new Mat();
-        Imgproc.bilateralFilter(i_MSource ,v_MTarget ,15 ,15 ,15);
+        
+        double v_Scale = OpenCV.resizeHeight(i_MSource ,v_MTarget ,320);
+        
+//        HighGui.imshow("缩小" ,v_MTarget);
+//        HighGui.waitKey(0);
+        
+        // Imgproc.bilateralFilter(v_MTarget ,v_MTarget ,7 ,7 ,7);
         Imgproc.cvtColor(v_MTarget ,v_MTarget ,Imgproc.COLOR_BGR2HSV);   // 注意：BGR，不是RGB
         Core.inRange(v_MTarget ,i_LowerColor ,i_UpperColor ,v_MTarget);
         
@@ -150,7 +166,7 @@ public class JU_102_Video
         // 获取轮廓
         List<MatOfPoint> v_Contours = new ArrayList<MatOfPoint>();  // 轮廓结果集
         Imgproc.findContours(v_MTarget ,v_Contours ,new Mat() ,Imgproc.RETR_TREE ,Imgproc.CHAIN_APPROX_SIMPLE);
-        List<CVPoint> v_MaxRectangles = OpenCV.contoursMaxRectangle(v_Contours);
+        List<CVPoint> v_MaxRectangles = OpenCV.contoursMaxRectangle(v_Contours ,v_Scale);
         
         
         

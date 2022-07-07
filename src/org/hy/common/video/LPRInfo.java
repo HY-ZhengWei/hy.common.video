@@ -1,4 +1,4 @@
-package org.hy.common.video.junit.ocr;
+package org.hy.common.video;
 
 import org.opencv.core.Mat;
 

@@ -16,6 +16,7 @@ import javax.imageio.ImageIO;
 import org.hy.common.Help;
 import org.hy.common.StringHelp;
 import org.hy.common.video.CVPoint;
+import org.hy.common.video.LPRInfo;
 import org.hy.common.video.OpenCV;
 import org.hy.common.xml.log.Logger;
 import org.junit.Test;
@@ -338,7 +339,7 @@ public class JU_002_CarNumber
         // 获取轮廓
         List<MatOfPoint> v_Contours = new ArrayList<MatOfPoint>();  // 轮廓结果集
         Imgproc.findContours(v_MEnd ,v_Contours ,new Mat() ,Imgproc.RETR_TREE ,Imgproc.CHAIN_APPROX_SIMPLE);
-        List<CVPoint> v_MaxRectangles = OpenCV.contoursMaxRectangle(v_Contours);
+        List<CVPoint> v_MaxRectangles = OpenCV.contoursMaxRectangle(v_Contours ,1D);
         /*
         Scalar        v_Color         = new Scalar(0 ,0 ,255);
         for (CVPoint v_CVPoint : v_MaxRectangles)
