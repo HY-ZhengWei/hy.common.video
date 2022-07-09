@@ -175,41 +175,60 @@ public class JU_107_Move
                     v_CVP.union(v_XMin ,v_YMin ,v_XMax ,v_YMax);
                 }
                 
-                for (double v_XIndex = v_CVP.getXMin(); v_XIndex <= v_CVP.getXMax(); v_XIndex = v_XIndex + v_BlockSize)
+                for (double v_XIndex = Math.max(v_CVP.getXHelp() ,v_CVP.getXMin()); v_XIndex <= v_CVP.getXMax(); v_XIndex = v_XIndex + v_BlockSize)
                 {
-                    for (double v_YIndex = v_CVP.getYMin(); v_YIndex <= v_CVP.getYMax(); v_YIndex = v_YIndex + v_BlockSize)
+                    for (double v_YIndex = Math.max(v_CVP.getYHelp() ,v_CVP.getYMin()); v_YIndex <= v_CVP.getYMax(); v_YIndex = v_YIndex + v_BlockSize)
                     {
                         CVPoint v_CVPTemp  = null;
                         Integer v_PKeyTemp = null;
                         
                         v_PKeyTemp = v_CVPointMap.getRow((v_XIndex + v_BlockSize) + "" ,v_YIndex + "");
-                        v_CVPTemp  = v_PKeyTemp == null ? null : v_CVPoints.get(v_PKeyTemp);
-                        if ( v_CVPTemp != null && v_CVPTemp != v_CVP )
+                        if ( v_PKey != v_PKeyTemp )
                         {
-                            v_CVP.union(v_CVPTemp);
-                            v_CVPoints.put(v_PKeyTemp ,v_CVP);
+                            v_CVPTemp  = v_PKeyTemp == null ? null : v_CVPoints.get(v_PKeyTemp);
+                            if ( v_CVPTemp == null )
+                            {
+                                v_CVPointMap.putRow((v_XIndex + v_BlockSize) + "" ,v_YIndex + "" ,v_PKey);
+                            }
+                            else if ( v_CVPTemp != v_CVP )
+                            {
+                                v_CVP.union(v_CVPTemp);
+                                v_CVPoints.put(v_PKeyTemp ,v_CVP);
+                            }
                         }
-                        v_CVPointMap.putRow((v_XIndex + v_BlockSize) + "" ,v_YIndex + "" ,v_PKey);
-                        
                         
                         v_PKeyTemp = v_CVPointMap.getRow((v_XIndex + v_BlockSize) + "" ,(v_YIndex + v_BlockSize) + "");
-                        v_CVPTemp  = v_PKeyTemp == null ? null : v_CVPoints.get(v_PKeyTemp);
-                        if ( v_CVPTemp != null && v_CVPTemp != v_CVP )
+                        if ( v_PKey != v_PKeyTemp )
                         {
-                            v_CVP.union(v_CVPTemp);
+                            v_CVPTemp  = v_PKeyTemp == null ? null : v_CVPoints.get(v_PKeyTemp);
+                            if ( v_CVPTemp == null )
+                            {
+                                v_CVPointMap.putRow((v_XIndex + v_BlockSize) + "" ,(v_YIndex + v_BlockSize) + "" ,v_PKey);
+                            }
+                            else if ( v_CVPTemp != v_CVP )
+                            {
+                                v_CVP.union(v_CVPTemp);
+                            }
                         }
-                        v_CVPointMap.putRow((v_XIndex + v_BlockSize) + "" ,(v_YIndex + v_BlockSize) + "" ,v_PKey);
-                        
                         
                         v_PKeyTemp = v_CVPointMap.getRow(v_XIndex + "" ,(v_YIndex + v_BlockSize) + "");
-                        v_CVPTemp  = v_PKeyTemp == null ? null : v_CVPoints.get(v_PKeyTemp);
-                        if ( v_CVPTemp != null && v_CVPTemp != v_CVP )
+                        if ( v_PKey != v_PKeyTemp )
                         {
-                            v_CVP.union(v_CVPTemp);
+                            v_CVPTemp  = v_PKeyTemp == null ? null : v_CVPoints.get(v_PKeyTemp);
+                            if ( v_CVPTemp == null )
+                            {
+                                v_CVPointMap.putRow(v_XIndex + "" ,(v_YIndex + v_BlockSize) + "" ,v_PKey);
+                            }
+                            else if ( v_CVPTemp != v_CVP )
+                            {
+                                v_CVP.union(v_CVPTemp);
+                            }
                         }
-                        v_CVPointMap.putRow(v_XIndex + "" ,(v_YIndex + v_BlockSize) + "" ,v_PKey);
                     }
                 }
+                
+                v_CVP.setXHelp(v_CVP.getXMax());
+                v_CVP.setYHelp(v_CVP.getYMax());
 //                Imgproc.rectangle(v_MMask ,v_CVP.toRect() ,v_MMaskColor ,1);
 //                HighGui.imshow("dddddd" ,v_MMask);
 //                HighGui.waitKey(0);

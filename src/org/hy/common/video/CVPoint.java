@@ -21,6 +21,10 @@ public class CVPoint
     
     private Integer count;
     
+    private Double  xHelp;
+    
+    private Double  yHelp;
+    
     
     
     public CVPoint()
@@ -29,6 +33,8 @@ public class CVPoint
         this.xMax     = Double.MIN_VALUE;
         this.yMin     = Double.MAX_VALUE;
         this.yMax     = Double.MIN_VALUE;
+        this.xHelp    = 0D;
+        this.yHelp    = 0D;
         this.isChange = false;
         this.count    = 1;
     }
@@ -41,6 +47,8 @@ public class CVPoint
         this.xMax     = i_XMax;
         this.yMin     = i_YMin;
         this.yMax     = i_YMax;
+        this.xHelp    = 0D;
+        this.yHelp    = 0D;
         this.isChange = true;
         this.count    = 1;
     }
@@ -64,6 +72,9 @@ public class CVPoint
         this.setYMin(i_Other.getYMin());
         this.setYMax(i_Other.getYMax());
         this.setCount(this.getCount() + i_Other.getCount());
+        
+        this.xHelp = Math.min(this.xHelp ,i_Other.getXHelp());
+        this.yHelp = Math.min(this.yHelp ,i_Other.getYHelp());
         
         return this;
     }
@@ -129,6 +140,8 @@ public class CVPoint
         v_New.setYMin( this.yMin);
         v_New.setYMax( this.yMax);
         v_New.setCount(this.count);
+        v_New.setXHelp(this.xHelp);
+        v_New.setYHelp(this.yHelp);
         
         return v_New;
     }
@@ -333,6 +346,30 @@ public class CVPoint
     public void setCount(Integer count)
     {
         this.count = count;
+    }
+
+    
+    public Double getXHelp()
+    {
+        return xHelp;
+    }
+
+    
+    public void setXHelp(Double xHelp)
+    {
+        this.xHelp = xHelp;
+    }
+
+    
+    public Double getYHelp()
+    {
+        return yHelp;
+    }
+
+    
+    public void setYHelp(Double yHelp)
+    {
+        this.yHelp = yHelp;
     }
     
 }
