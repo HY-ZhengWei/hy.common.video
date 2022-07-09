@@ -65,17 +65,20 @@ public class JU_104_SVM_Image
         trainData(v_SVMFile);
         
         SVM v_SVM = loadSVM(v_SVMFile);
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/1-001.jpg").getFile().substring(1));
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/2-001.jpg").getFile().substring(1));
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-001.jpg").getFile().substring(1));
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-002.jpg").getFile().substring(1));
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-003.jpg").getFile().substring(1));
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-004.jpg").getFile().substring(1));
-//        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-005.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/1-001.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/2-001.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-001.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-002.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-003.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-004.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-005.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-006.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-007.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-008.jpg").getFile().substring(1));
+        svmTest(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-009.jpg").getFile().substring(1));
         
         
-        predict(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-005.jpg").getFile().substring(1));
-        
+        //predict(v_SVM ,JU_104_SVM_Image.class.getResource("SVM_01/test-001.jpg").getFile().substring(1));
     }
     
     
@@ -83,11 +86,12 @@ public class JU_104_SVM_Image
     public static float predict(SVM i_SVM ,String i_ImageName)
     {
         Mat      v_MImage  = Imgcodecs.imread(i_ImageName);
+        Mat      v_MTarget = new Mat();
         
-        Imgproc.cvtColor(v_MImage ,v_MImage ,Imgproc.COLOR_RGB2GRAY);
-        v_MImage.convertTo(v_MImage, CvType.CV_32FC1);
+        Imgproc.cvtColor(v_MImage ,v_MTarget ,Imgproc.COLOR_BGR2GRAY);
+        v_MImage.convertTo(v_MTarget, CvType.CV_32FC1);
         
-        float [] v_HogData = getHOG(v_MImage);
+        float [] v_HogData = getHOG(v_MTarget);
         float    v_Ret     = predict(i_SVM ,v_HogData);
         
         $Logger.info("" + v_Ret);
@@ -168,7 +172,7 @@ public class JU_104_SVM_Image
     {
         Mat v_MTarget = new Mat();
         
-        Imgproc.cvtColor(i_MImage ,v_MTarget ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(i_MImage ,v_MTarget ,Imgproc.COLOR_BGR2GRAY);
         Imgproc.resize(v_MTarget ,v_MTarget ,new Size($TranWidth ,$TranHeight));
         v_MTarget.convertTo(v_MTarget, CvType.CV_32FC1);
         Mat v_Reshape = v_MTarget.reshape(0, 1);
@@ -209,7 +213,7 @@ public class JU_104_SVM_Image
     {
         Mat v_TrainImage = Imgcodecs.imread(i_TrainImageName);
         
-        Imgproc.cvtColor(v_TrainImage ,v_TrainImage ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_TrainImage ,v_TrainImage ,Imgproc.COLOR_BGR2GRAY);
         Imgproc.resize(v_TrainImage ,v_TrainImage ,new Size($TranWidth ,$TranHeight));
         
         v_TrainImage.convertTo(v_TrainImage ,CvType.CV_32FC1);

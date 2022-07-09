@@ -96,7 +96,7 @@ public class JU_103_SVM
         Mat dst = new Mat();
         Imgproc.resize(imread,dst,new Size(640 ,800));
         
-        Imgproc.cvtColor(dst ,dst ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(dst ,dst ,Imgproc.COLOR_BGR2GRAY);
         
         imread.convertTo(dst, CvType.CV_32FC1);
         Mat reshape = imread.reshape(0, 1);

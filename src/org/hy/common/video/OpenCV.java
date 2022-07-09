@@ -12,7 +12,11 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.ml.Ml;
+import org.opencv.ml.SVM;
+import org.opencv.ml.TrainData;
 
 public class OpenCV
 {
@@ -219,6 +223,38 @@ public class OpenCV
     
     
     /**
+     * 计算点落在方格内的数量
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-08
+     * @version     v1.0
+     * 
+     * @param i_Contours
+     * @return
+     */
+    public static int [][] contoursCounter(List<MatOfPoint> i_Contours ,int i_BlockWCount ,int i_BlockHCount ,int i_BlockSize)
+    {
+        int [][] v_Counter = new int[i_BlockHCount][i_BlockWCount];
+        
+        for (MatOfPoint v_MP : i_Contours)
+        {
+            Point[] v_PArr = v_MP.toArray();
+            
+            for (Point v_P : v_PArr)
+            {
+                int v_WIndex = (int)v_P.x / i_BlockSize;
+                int v_HIndex = (int)v_P.y / i_BlockSize;
+                
+                v_Counter[v_HIndex][v_WIndex]++;
+            }
+        }
+        
+        return v_Counter;
+    }
+    
+    
+    
+    /**
      * 从大图中剪裁出指定尺寸的小图
      * 
      * @author      ZhengWei(HY)
@@ -255,6 +291,331 @@ public class OpenCV
         v_ImgMatROI.copyTo(v_ImgMat);  // 从ROI中剪切图片
         
         return v_ImgMat;
+    }
+    
+    
+    
+    /**
+     * 训练数据
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-03
+     * @version     v1.0
+     * 
+     * @param i_TrainDatas   训练数据
+     * @param i_TrainLables  训练标签
+     * @return
+     */
+    public static SVM svm(Mat i_TrainDatas ,Mat i_TrainLables)
+    {
+        SVM svm = SVM.create();
+        svm.setC(1);
+        svm.setP(0);
+        svm.setNu(0);
+        svm.setCoef0(0);
+        svm.setGamma(1);
+        svm.setDegree(0);
+        
+        /***
+         * 核类型
+         * CvSVM::LINEAR - 没有任何向映像至高维空间，线性区分（或回归）在原始特征空间中被完成，这是最快的选择。 d(x,y) = x•y == (x,y)
+         * CvSVM::POLY - 多项式核: d(x,y)= (gamma*(x•y)+coef0)degree
+         * CvSVM::RBF - 径向基，对于大多数情况都是一个较好的选择：d(x,y)= exp(-gamma*|x-y|2)
+         * CvSVM::SIGMOID - sigmoid函数被用作核函数:d(x,y) = tanh(gamma*(x•y)+coef0)
+         * ***/
+        svm.setType(SVM.C_SVC);
+        
+        /***
+         * 核类型
+         * CvSVM::LINEAR - 没有任何向映像至高维空间，线性区分（或回归）在原始特征空间中被完成，这是最快的选择。 d(x,y) = x•y == (x,y)
+         * CvSVM::POLY - 多项式核: d(x,y)= (gamma*(x•y)+coef0)degree
+         * CvSVM::RBF - 径向基，对于大多数情况都是一个较好的选择：d(x,y)= exp(-gamma*|x-y|2)
+         * CvSVM::SIGMOID - sigmoid函数被用作核函数:d(x,y) = tanh(gamma*(x•y)+coef0)
+         * ***/
+        svm.setKernel(SVM.LINEAR);
+        
+        // /训练参数迭代终止条件，训练类型，最大迭代次数 ，结果精确性精度
+        TermCriteria criteria=new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER ,1000 ,0.001);
+        svm.setTermCriteria(criteria);
+
+        TrainData trainData = TrainData.create(i_TrainDatas ,Ml.ROW_SAMPLE ,i_TrainLables);
+        svm.train(trainData.getSamples(), Ml.ROW_SAMPLE ,trainData.getResponses());
+        return svm;
+    }
+    
+    
+    
+    /**
+     * 判定点的四周是否有值，本点是否是一个孤独的点
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-08
+     * @version     v1.0
+     * 
+     * @param i_Counter
+     * @param i_H
+     * @param i_W
+     * @return
+     */
+    public static boolean isOnlyOneBlock(int [][] i_Counter ,int i_H ,int i_W)
+    {
+        int v_BlockWCount = i_Counter[0].length;  // 宽度上分割的块数
+        int v_BlockHCount = i_Counter.length;     // 高度上分割的块数
+        
+        int v_LT = 0;  /* 左上角 */
+        int v_RT = 0;  /* 右上角 */
+        
+        int v_LB = 0;  /* 左下角 */
+        int v_RB = 0;  /* 右下角 */
+        
+        int v_LM = 0;  /* 左中间 */
+        int v_RM = 0;  /* 右中间 */
+        int v_TM = 0;  /* 顶中间 */
+        int v_BM = 0;  /* 底中间 */
+        
+        if ( i_H >= 1 )
+        {
+            v_TM = i_Counter[i_H - 1][i_W];
+            if ( v_TM > 0 ) { return false; }
+            
+            if ( i_W >= 1 )
+            {
+                v_LT = i_Counter[i_H - 1][i_W - 1];
+                if ( v_LT > 0 ) { return false; }
+            }
+            
+            if ( i_W < v_BlockWCount - 1 )
+            {
+                v_RT = i_Counter[i_H - 1][i_W + 1];
+                if ( v_RT > 0 ) { return false; }
+            }
+        }
+        
+        if ( i_H < v_BlockHCount - 1 )
+        {
+            v_BM = i_Counter[i_H + 1][i_W];
+            if ( v_BM > 0 ) { return false; }
+            
+            if ( i_W >= 1 )
+            {
+                v_LB = i_Counter[i_H + 1][i_W - 1];
+                if ( v_LB > 0 ) { return false; }
+            }
+            
+            if ( i_W < v_BlockWCount - 1 )
+            {
+                v_RB = i_Counter[i_H + 1][i_W + 1];
+                if ( v_RB > 0 ) { return false; }
+            }
+        }
+        
+        if ( i_W >= 1 )
+        {
+            v_LM = i_Counter[i_H][i_W - 1];
+            if ( v_LM > 0 ) { return false; }
+        }
+        
+        if ( i_W < v_BlockWCount - 1 )
+        {
+            v_RM = i_Counter[i_H][i_W + 1];
+            if ( v_RM > 0 ) { return false; }
+        }
+        
+        return true;
+    }
+    
+    
+    
+    public static void merge(List<CVPoint> io_Rectangles)
+    {
+        if ( io_Rectangles.size() <= 1 )
+        {
+            return;
+        }
+        
+        for (int x=io_Rectangles.size() - 1; x>=0; x--)
+        {
+            CVPoint v_PA = io_Rectangles.get(x);
+            
+            for (int y=io_Rectangles.size() - 1; y>=0; y--)
+            {
+                if ( x == y )
+                {
+                    continue;
+                }
+                
+                CVPoint v_PB    = io_Rectangles.get(y);
+                boolean v_IsDel = false;
+                
+                // A在B的右下角，并相互有交叉区域
+                if ( v_PB.getXMin() <= v_PA.getXMin() && v_PA.getXMin() <= v_PB.getXMax()
+                  && v_PB.getYMin() <= v_PA.getYMin() && v_PA.getYMin() <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // A在B的左下角，并相互有交叉区域
+                else if ( v_PB.getXMin() <= v_PA.getXMax() && v_PA.getXMax() <= v_PB.getXMax()
+                       && v_PB.getYMin() <= v_PA.getYMin() && v_PA.getYMin() <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // A在B的右上角，并相互有交叉区域
+                else if ( v_PB.getXMin() <= v_PA.getXMin() && v_PA.getXMin() <= v_PB.getXMax()
+                       && v_PB.getYMin() <= v_PA.getYMax() && v_PA.getYMax() <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // A在B的左上角，并相互有交叉区域
+                else if ( v_PB.getXMin() <= v_PA.getXMax() && v_PA.getXMax() <= v_PB.getXMax()
+                       && v_PB.getYMin() <= v_PA.getYMax() && v_PA.getYMax() <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                
+                // B在A的右下角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= v_PB.getXMin() && v_PB.getXMin() <= v_PA.getXMax()
+                       && v_PA.getYMin() <= v_PB.getYMin() && v_PB.getYMin() <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // B在A的左下角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= v_PB.getXMax() && v_PB.getXMax() <= v_PA.getXMax()
+                       && v_PA.getYMin() <= v_PB.getYMin() && v_PB.getYMin() <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // B在A的右上角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= v_PB.getXMin() && v_PB.getXMin() <= v_PA.getXMax()
+                       && v_PA.getYMin() <= v_PB.getYMax() && v_PB.getYMax() <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // B在A的左上角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= v_PB.getXMax() && v_PB.getXMax() <= v_PA.getXMax()
+                       && v_PA.getYMin() <= v_PB.getYMax() && v_PB.getYMax() <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                
+                if ( v_IsDel )
+                {
+                    // 删除包含关系的、交叉关系的
+                    io_Rectangles.remove(x);
+                    
+                    v_PB.setXMin(v_PA.getXMin());
+                    v_PB.setXMax(v_PA.getXMax());
+                    v_PB.setYMin(v_PA.getYMin());
+                    v_PB.setYMax(v_PA.getYMax());
+                    break;
+                }
+            }
+        }
+    }
+    
+    
+    public static void merge2(List<CVPoint> io_Rectangles)
+    {
+        if ( io_Rectangles.size() <= 1 )
+        {
+            return;
+        }
+        
+        for (int x=0; x<io_Rectangles.size(); x++)
+        {
+            CVPoint v_PA = io_Rectangles.get(x);
+            
+            for (int y=io_Rectangles.size()-1; y>=0; y--)
+            {
+                if ( x == y )
+                {
+                    continue;
+                }
+                
+                CVPoint v_PB    = io_Rectangles.get(y);
+                boolean v_IsDel = false;
+                
+                // A在B的右下角，并相互有交叉区域
+                if ( v_PB.getXMin() <= Math.max(v_PA.getXMin() ,v_PB.getXMin()) && Math.max(v_PA.getXMin() ,v_PB.getXMin()) <= v_PB.getXMax()
+                  && v_PB.getYMin() <= Math.max(v_PA.getYMin() ,v_PB.getYMin()) && Math.max(v_PA.getYMin() ,v_PB.getYMin()) <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // A在B的左下角，并相互有交叉区域
+                else if ( v_PB.getXMin() <= Math.min(v_PA.getXMax() ,v_PB.getXMax()) && Math.min(v_PA.getXMax() ,v_PB.getXMax()) <= v_PB.getXMax()
+                       && v_PB.getYMin() <= Math.max(v_PA.getYMin() ,v_PB.getYMin()) && Math.max(v_PA.getYMin() ,v_PB.getYMin()) <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // A在B的右上角，并相互有交叉区域
+                else if ( v_PB.getXMin() <= Math.max(v_PA.getXMin() ,v_PB.getXMin()) && Math.max(v_PA.getXMin() ,v_PB.getXMin()) <= v_PB.getXMax()
+                       && v_PB.getYMin() <= Math.min(v_PA.getYMax() ,v_PB.getYMax()) && Math.min(v_PA.getYMax() ,v_PB.getYMax()) <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // A在B的左上角，并相互有交叉区域
+                else if ( v_PB.getXMin() <= Math.min(v_PA.getXMax() ,v_PB.getXMax()) && Math.min(v_PA.getXMax() ,v_PB.getXMax()) <= v_PB.getXMax()
+                       && v_PB.getYMin() <= Math.min(v_PA.getYMax() ,v_PB.getYMax()) && Math.min(v_PA.getYMax() ,v_PB.getYMax()) <= v_PB.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                
+                // B在A的右下角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= Math.max(v_PB.getXMin() ,v_PA.getXMin()) && Math.max(v_PB.getXMin() ,v_PA.getXMin()) <= v_PA.getXMax()
+                       && v_PA.getYMin() <= Math.max(v_PB.getYMin() ,v_PA.getYMin()) && Math.max(v_PB.getYMin() ,v_PA.getYMin()) <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // B在A的左下角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= Math.min(v_PB.getXMax() ,v_PA.getXMax()) && Math.min(v_PB.getXMax() ,v_PA.getXMax()) <= v_PA.getXMax()
+                       && v_PA.getYMin() <= Math.max(v_PB.getYMin() ,v_PA.getYMin()) && Math.max(v_PB.getYMin() ,v_PA.getYMin()) <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // B在A的右上角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= Math.max(v_PB.getXMin() ,v_PA.getXMin()) && Math.max(v_PB.getXMin() ,v_PA.getXMin()) <= v_PA.getXMax()
+                       && v_PA.getYMin() <= Math.min(v_PB.getYMax() ,v_PA.getYMax()) && Math.min(v_PB.getYMax() ,v_PA.getYMax()) <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                // B在A的左上角，并相互有交叉区域
+                else if ( v_PA.getXMin() <= Math.min(v_PB.getXMax() ,v_PA.getXMin()) && Math.min(v_PB.getXMax() ,v_PA.getXMin()) <= v_PA.getXMax()
+                       && v_PA.getYMin() <= Math.min(v_PB.getYMax() ,v_PA.getYMax()) && Math.min(v_PB.getYMax() ,v_PA.getYMax()) <= v_PA.getYMax() )
+                {
+                    v_IsDel = true;
+                }
+                
+                if ( v_IsDel )
+                {
+                    // 删除包含关系的、交叉关系的
+                    io_Rectangles.remove(y);
+                    
+                    v_PA.setXMin(v_PB.getXMin());
+                    v_PA.setXMax(v_PB.getXMax());
+                    v_PA.setYMin(v_PB.getYMin());
+                    v_PA.setYMax(v_PB.getYMax());
+                    break;
+                }
+            }
+        }
+    }
+    
+    
+    
+    public static void drawBlocks(Mat i_MTarget ,int i_BlockWCount ,int i_BlockHCount ,int i_BlockSize ,Scalar i_BlockLineColor)
+    {
+        int      v_Width          = i_MTarget.cols();             // 列数是宽度
+        int      v_Height         = i_MTarget.rows();             // 行数是高度
+        
+        // 绘制竖线
+        for (int v_W=1; v_W<i_BlockWCount; v_W++)
+        {
+            Imgproc.line(i_MTarget ,new Point(v_W * i_BlockSize ,0) ,new Point(v_W * i_BlockSize ,v_Height) ,i_BlockLineColor ,1);
+        }
+        // 绘制横线
+        for (int v_H=1; v_H<i_BlockHCount; v_H++)
+        {
+            Imgproc.line(i_MTarget ,new Point(0 ,v_H * i_BlockSize) ,new Point(v_Width ,v_H * i_BlockSize) ,i_BlockLineColor ,1);
+        }
     }
     
 }

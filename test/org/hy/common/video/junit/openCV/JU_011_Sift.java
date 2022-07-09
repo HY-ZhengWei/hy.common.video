@@ -71,7 +71,7 @@ public class JU_011_Sift
         HighGui.imshow("原图" ,v_MSource);
         HighGui.waitKey(0);
         
-        Imgproc.cvtColor(v_MSource ,v_MTarget ,Imgproc.COLOR_RGB2GRAY);   // 灰度图
+        Imgproc.cvtColor(v_MSource ,v_MTarget ,Imgproc.COLOR_BGR2GRAY);   // 灰度图
         HighGui.imshow("灰度图" ,v_MTarget);
         HighGui.waitKey(0);
         

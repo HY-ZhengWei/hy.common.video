@@ -86,7 +86,7 @@ public class JU_101_Document
         
         v_MStart = v_MEnd;
         v_MEnd   = newMat("灰度图");
-        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(v_MStart ,v_MEnd ,Imgproc.COLOR_BGR2GRAY);
         
         v_MStart = v_MEnd;
         v_MEnd   = newMat("高斯噪声");
