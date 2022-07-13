@@ -17,7 +17,11 @@ public class CVPoint
     
     private boolean isChange;
     
+    private boolean javaCVIsChange;
+    
     private Rect    rect;
+    
+    private org.bytedeco.opencv.opencv_core.Rect javaCVRect;
     
     private Integer count;
     
@@ -29,28 +33,30 @@ public class CVPoint
     
     public CVPoint()
     {
-        this.xMin     = Double.MAX_VALUE;
-        this.xMax     = Double.MIN_VALUE;
-        this.yMin     = Double.MAX_VALUE;
-        this.yMax     = Double.MIN_VALUE;
-        this.xHelp    = 0D;
-        this.yHelp    = 0D;
-        this.isChange = false;
-        this.count    = 1;
+        this.xMin           = Double.MAX_VALUE;
+        this.xMax           = Double.MIN_VALUE;
+        this.yMin           = Double.MAX_VALUE;
+        this.yMax           = Double.MIN_VALUE;
+        this.xHelp          = 0D;
+        this.yHelp          = 0D;
+        this.isChange       = false;
+        this.javaCVIsChange = false;
+        this.count          = 1;
     }
     
     
     
     public CVPoint(double i_XMin ,double i_YMin ,double i_XMax ,double i_YMax)
     {
-        this.xMin     = i_XMin;
-        this.xMax     = i_XMax;
-        this.yMin     = i_YMin;
-        this.yMax     = i_YMax;
-        this.xHelp    = 0D;
-        this.yHelp    = 0D;
-        this.isChange = true;
-        this.count    = 1;
+        this.xMin           = i_XMin;
+        this.xMax           = i_XMax;
+        this.yMin           = i_YMin;
+        this.yMax           = i_YMax;
+        this.xHelp          = 0D;
+        this.yHelp          = 0D;
+        this.isChange       = true;
+        this.javaCVIsChange = true;
+        this.count          = 1;
     }
     
     
@@ -228,6 +234,23 @@ public class CVPoint
         }
         
         return this.rect;
+    }
+    
+    
+    
+    public synchronized org.bytedeco.opencv.opencv_core.Rect javaCVToRect()
+    {
+        if ( this.javaCVIsChange )
+        {
+            this.javaCVIsChange = false;
+            this.javaCVRect = new org.bytedeco.opencv.opencv_core.Rect(
+                                 this.xMin.intValue()
+                                ,this.yMin.intValue()
+                                ,this.getWidth().intValue()
+                                ,this.getHeight().intValue());
+        }
+        
+        return this.javaCVRect;
     }
     
     

@@ -99,7 +99,7 @@ public class JU_012_Haar
     private Mat haarFullbody(Mat i_MSource)
     {
         Mat               v_MTarget        = i_MSource.clone();
-        CascadeClassifier v_Detector       = new CascadeClassifier("D:\\OpenCV\\sources\\data\\haarcascades\\haarcascade_profileface.xml");
+        CascadeClassifier v_Detector       = new CascadeClassifier("D:\\OpenCV\\sources\\data\\haarcascades\\haarcascade_frontalface_alt.xml");
         MatOfRect         v_DetectorResult = new MatOfRect();        // 检测结果，矩形集
         
         v_Detector.detectMultiScale(v_MTarget ,v_DetectorResult);    // 检测眼睛

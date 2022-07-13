@@ -3,6 +3,7 @@ package org.hy.common.video;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bytedeco.opencv.opencv_core.MatVector;
 import org.hy.common.Help;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -250,6 +251,59 @@ public class OpenCV
         }
         
         return v_Counter;
+    }
+    
+    
+    
+    /**
+     * 计算点落在方格内的数量
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-08
+     * @version     v1.0
+     * 
+     * @param i_Contours
+     * @return
+     */
+    public static int [][] contoursCounter(MatVector i_Contours ,int i_BlockWCount ,int i_BlockHCount ,int i_BlockSize)
+    {
+        int [][] v_Counter = new int[i_BlockHCount][i_BlockWCount];
+        
+        for (long x=0L; x<i_Contours.size(); x++)
+        {
+            org.bytedeco.opencv.opencv_core.Mat v_MP = i_Contours.get(x);
+            
+        }
+        
+        return v_Counter;
+    }
+    
+    
+    
+    /**
+     * 计算点落在方格内的数量
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-11
+     * @version     v1.0
+     * 
+     * @param i_Contours
+     * @return
+     */
+    public static void contoursCounter(List<MatOfPoint> i_Contours ,int i_BlockSize ,int [][] io_Counter)
+    {
+        for (MatOfPoint v_MP : i_Contours)
+        {
+            Point[] v_PArr = v_MP.toArray();
+            
+            for (Point v_P : v_PArr)
+            {
+                int v_WIndex = (int)v_P.x / i_BlockSize;
+                int v_HIndex = (int)v_P.y / i_BlockSize;
+                
+                io_Counter[v_HIndex][v_WIndex]++;
+            }
+        }
     }
     
     
@@ -601,6 +655,15 @@ public class OpenCV
     
     
     
+    /**
+     * 绘制分割的方块
+     * 
+     * @param i_MTarget
+     * @param i_BlockWCount
+     * @param i_BlockHCount
+     * @param i_BlockSize
+     * @param i_BlockLineColor
+     */
     public static void drawBlocks(Mat i_MTarget ,int i_BlockWCount ,int i_BlockHCount ,int i_BlockSize ,Scalar i_BlockLineColor)
     {
         int      v_Width          = i_MTarget.cols();             // 列数是宽度
@@ -616,6 +679,38 @@ public class OpenCV
         {
             Imgproc.line(i_MTarget ,new Point(0 ,v_H * i_BlockSize) ,new Point(v_Width ,v_H * i_BlockSize) ,i_BlockLineColor ,1);
         }
+    }
+    
+    
+    
+    /**
+     * 计算出块号
+     * 
+     * @param i_X            当前X坐标
+     * @param i_Y            当前Y坐标
+     * @param i_BlockSize    块大小
+     * @param i_BlockWCount  宽度上分割的块数
+     * @return               最小下标从0开始
+     */
+    public static int calcBlockNo(double i_X ,double i_Y ,int i_BlockSize ,int i_BlockWCount)
+    {
+        double v_X = i_X;
+        double v_Y = i_Y;
+        
+        if ( v_X % i_BlockSize != 0 )
+        {
+            v_X = Help.round(v_X * 1.0D / i_BlockSize ,0) * i_BlockSize;
+        }
+        
+        if ( v_Y % i_BlockSize != 0 )
+        {
+            v_Y = Help.round(v_Y * 1.0D / i_BlockSize ,0) * i_BlockSize;
+        }
+        
+        int v_ColIndex = (int)(v_X / i_BlockSize);
+        int v_RowIndex = (int)(v_Y / i_BlockSize);
+        
+        return v_RowIndex * i_BlockWCount + v_ColIndex;
     }
     
 }

@@ -91,6 +91,11 @@ public class JU_107_Move
     
     private static void drawRect(Mat io_MSource ,List<CVPoint> i_CVPoints ,Scalar i_Color ,int i_LineSize)
     {
+        List<MatOfPoint> v_Points = new ArrayList<MatOfPoint>();
+        
+        
+        Imgproc.polylines(io_MSource ,v_Points ,true ,i_Color ,i_LineSize);
+        
         for (CVPoint v_CVP : i_CVPoints)
         {
             Imgproc.rectangle(io_MSource ,v_CVP.toRect() ,i_Color ,i_LineSize);
