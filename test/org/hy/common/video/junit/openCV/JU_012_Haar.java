@@ -49,7 +49,7 @@ public class JU_012_Haar
         HighGui.imshow("识别眼睛" ,haarEyes(v_MSource));
         HighGui.waitKey(0);
         
-        HighGui.imshow("识别人体" ,haarFullbody(v_MSource));
+        HighGui.imshow("识别人脸" ,haarFace(v_MSource));
         HighGui.waitKey(0);
         
         $Logger.info(v_MTarget);
@@ -91,12 +91,12 @@ public class JU_012_Haar
     
     
     /**
-     * 识别人体
+     * 识别人脸
      * 
      * @param i_MSource
      * @return
      */
-    private Mat haarFullbody(Mat i_MSource)
+    private Mat haarFace(Mat i_MSource)
     {
         Mat               v_MTarget        = i_MSource.clone();
         CascadeClassifier v_Detector       = new CascadeClassifier("D:\\OpenCV\\sources\\data\\haarcascades\\haarcascade_frontalface_alt.xml");

@@ -6,7 +6,6 @@ import java.util.List;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.hy.common.Help;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -25,18 +24,29 @@ public class OpenCV
     private static List<CVColor> $LPRCVColors;
     
     
-    private static Scalar $BlackLowerColor;
+    private static       Scalar $BlackLowerColor;
+                         
+    private static       Scalar $BlackUpperColor;
+                         
+    private static       Scalar $WhiteLowerColor;
+                         
+    private static       Scalar $WhiteUpperColor;
     
-    private static Scalar $BlackUpperColor;
+    /** 红色 */
+    public  static final Scalar $Color_Red;
     
-    private static Scalar $WhiteLowerColor;
-    
-    private static Scalar $WhiteUpperColor;
+    /** 绿色 */
+    public  static final Scalar $Color_Green;
     
     
     
     static
     {
+        $Color_Red   = new Scalar(0 ,0   ,255);
+        
+        $Color_Green = new Scalar(0 ,255 ,0);
+        
+        
         $BlackLowerColor = new Scalar(0    ,0    ,0);
         $BlackUpperColor = new Scalar(180  ,255  ,46);
         
@@ -339,10 +349,12 @@ public class OpenCV
      */
     public static Mat cutImage(Mat i_MSource ,Rect i_Rect)
     {
-        Mat v_ImgMat    = new Mat(i_Rect.width, i_Rect.height, CvType.CV_8UC3);
+        Mat v_ImgMat    = new Mat(i_Rect.width, i_Rect.height, i_MSource.type());
         Mat v_ImgMatROI = new Mat(i_MSource ,i_Rect);
         
         v_ImgMatROI.copyTo(v_ImgMat);  // 从ROI中剪切图片
+        v_ImgMatROI.release();
+        v_ImgMatROI = null;
         
         return v_ImgMat;
     }

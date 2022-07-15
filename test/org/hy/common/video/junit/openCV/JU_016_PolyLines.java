@@ -38,11 +38,15 @@ import org.opencv.imgproc.Imgproc;
 @Xjava(value=XType.XML)
 public class JU_016_PolyLines
 {
-    private static final Logger               $Logger         = new Logger(JU_016_PolyLines.class ,true);
+    private static final Logger               $Logger          = new Logger(JU_016_PolyLines.class ,true);
     
-    private static       boolean              $IsInit         = false;
+    private static       boolean              $IsInit          = false;
     
-    private static       Map<Integer ,Scalar> $RedAreaMap     = new HashMap<Integer ,Scalar>();
+    /** 红色警示区 */
+    private static       Map<Integer ,Scalar>  $RedAreaMap     = new HashMap<Integer ,Scalar>();
+                                               
+    /** 红色警示区的标线 */
+    private static       List<MatOfPoint>      $RedAreaPoints  = new ArrayList<MatOfPoint>();
     
     
     
@@ -67,6 +71,15 @@ public class JU_016_PolyLines
             {
                 $RedAreaMap.put(Integer.parseInt(v_Value) ,v_RedLineColor);
             }
+            
+            Param      v_RedAreaPoint  = XJava.getParam("RedAreaPoint");
+            String []  v_RedAreaPoints = StringHelp.replaceAll(v_RedAreaPoint.getValue() ,new String[] {"\r" ,"\n" ,"\t" ," "} ,StringHelp.$ReplaceNil).split(",");
+            Point  []  v_PointList     = new Point[v_RedAreaPoints.length / 2];
+            for (int x=0 ,y=0; x<v_RedAreaPoints.length; x=x+2 ,y++)
+            {
+                v_PointList[y] = new Point(Integer.parseInt(v_RedAreaPoints[x]) ,Integer.parseInt(v_RedAreaPoints[x+1]));
+            }
+            $RedAreaPoints.add(new MatOfPoint(v_PointList));
         }
     }
     
@@ -75,7 +88,7 @@ public class JU_016_PolyLines
     @Test
     public void showImage()
     {
-        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines_T1N16.jpg").getFile().substring(1));
+        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines.jpg").getFile().substring(1));
         
         int      v_Width          = v_MTarget.cols();        // 列数是宽度
         int      v_Height         = v_MTarget.rows();        // 行数是高度
@@ -109,33 +122,9 @@ public class JU_016_PolyLines
     @Test
     public void polyLines()
     {
-        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines_T1N16.jpg").getFile().substring(1));
+        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines.jpg").getFile().substring(1));
         
-        Scalar           v_Color  = new Scalar(0 ,0 ,255);
-        List<MatOfPoint> v_Points = new ArrayList<MatOfPoint>();
-        
-        v_Points.add(new MatOfPoint(new Point(0    ,375)
-                                   ,new Point(0    ,440)
-                                   
-                                   ,new Point(45   ,425)
-                                   ,new Point(160  ,380)
-                                   ,new Point(340  ,325)
-                                   ,new Point(430  ,300)
-                                   ,new Point(490  ,280)
-                                   ,new Point(535  ,265)
-                                   
-                                   ,new Point(965  ,170)
-                                   ,new Point(950  ,162)
-                                   
-                                   ,new Point(775  ,185)
-                                   ,new Point(685  ,200)
-                                   ,new Point(580  ,220)
-                                   ,new Point(470  ,245)
-                                   ,new Point(380  ,265)
-                                   ,new Point(260  ,295)
-                                   ,new Point(125  ,335)));
-        Imgproc.polylines(v_MTarget ,v_Points ,true ,v_Color ,1);
-        
+        Imgproc.polylines(v_MTarget ,$RedAreaPoints ,true ,OpenCV.$Color_Red ,1);
         HighGui.imshow("红色区域" ,v_MTarget);
         HighGui.waitKey(0);
         
