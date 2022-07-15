@@ -1,5 +1,6 @@
 package org.hy.common.video.junit.openCV;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,14 +14,17 @@ import org.hy.common.video.OpenCV;
 import org.hy.common.xml.log.Logger;
 import org.junit.Test;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.ml.SVM;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
@@ -51,10 +55,21 @@ public class JU_108_Face
     private boolean isRunning;
     
     /** 间隔帧数。即不是每一帧均进行AI算法，可以忽略一些。默认值为：5 */
-    private int     frameInterval;
+    private int                  frameInterval;
     
     /** 未知人脸图片的保存路径 */
-    private String  savePathFaceUnknown;
+    private String               savePathFaceUnknown;
+    
+    /** 已知人脸数据的路径 */
+    private String               savePathFaceDB;
+    
+    /** 每张人脸照片的大小（单位：像素） */
+    private int                  faceSize;
+    
+    /** 人脸编号与人员名称的关系 */
+    private Map<Integer ,String> faceNameMap;
+    
+    private SVM                  svm;
     
     
     
@@ -69,6 +84,9 @@ public class JU_108_Face
     {
         this.frameInterval       = 0;
         this.savePathFaceUnknown = "D:\\VideoDatas\\face\\unknown";
+        this.savePathFaceDB      = "D:\\VideoDatas\\face\\FaceDatabase";
+        this.faceSize            = 100;
+        this.faceNameMap         = new HashMap<Integer ,String>();
     }
     
     
@@ -77,11 +95,145 @@ public class JU_108_Face
     public void face()
     {
         String v_VideoURL = "rtsp://admin:wzyb9114@10.1.130.210/Streaming/Channels/101";
-        // v_VideoURL = JU_008_Template.class.getResource("JU_108_Face.mp4").getFile().substring(1);
+        v_VideoURL = JU_008_Template.class.getResource("JU_108_Face.mp4").getFile().substring(1);
         
+        step00_SVM_01_Train();
+        step00_SVM_02_LoadSVM();
         step01_ReadVideo(v_VideoURL);
     }
+    
+    
+    
+    /**
+     * 开始训练
+     */
+    private void step00_SVM_01_Train()
+    {
+        List<Mat>     v_TrainDatas  = new ArrayList<Mat>();
+        List<Integer> v_TrainLabels = new ArrayList<Integer>();
         
+        File    v_FaceDBHomeDir = new File(this.savePathFaceDB);
+        File [] v_FaceDBFile    = v_FaceDBHomeDir.listFiles();
+        for (File v_ItemDir : v_FaceDBFile)
+        {
+            if ( v_ItemDir.isDirectory() )
+            {
+                String [] v_ItemDirName = v_ItemDir.getName().split("_");
+                Integer   v_FaceNo      = Integer.parseInt(v_ItemDirName[0]);
+                String    v_FaceName    = v_ItemDirName[1];
+                
+                this.faceNameMap.put(v_FaceNo ,v_FaceName);
+                step00_SVM_01_MakeTrainDatas(v_ItemDir.getAbsolutePath() ,v_FaceNo ,v_TrainDatas ,v_TrainLabels);
+            }
+        }
+        
+        
+        Mat v_MTrainDatas  = new Mat();
+        Mat v_MTrainLabels = new Mat(v_TrainLabels.size(), 1, CvType.CV_32SC1);
+        
+        Core.vconcat(v_TrainDatas, v_MTrainDatas);
+        for (int i = 0; i < v_TrainLabels.size(); i++)
+        {
+            int [] v_TrainLabel = { v_TrainLabels.get(i) };
+            v_MTrainLabels.put(i, 0, v_TrainLabel);
+        }
+        
+        SVM v_SVM = OpenCV.svm(v_MTrainDatas ,v_MTrainLabels);
+        v_SVM.save(this.savePathFaceDB + Help.getSysPathSeparator() + "HY.xml");
+        
+        for (Mat v_TrainData : v_TrainDatas)
+        {
+            v_TrainData.release();
+            v_TrainData = null;
+        }
+        
+        v_TrainDatas   .clear();
+        v_TrainLabels  .clear();
+        v_MTrainDatas .release();
+        v_MTrainLabels.release();
+        v_TrainDatas   = null;
+        v_TrainLabels  = null;
+        v_MTrainDatas  = null;
+        v_MTrainLabels = null;
+    }
+    
+    
+    
+    /**
+     * 生成训练数据
+     * 
+     * @param i_DirFullName
+     * @param i_TrainLabel
+     * @param io_TrainDatas
+     * @param io_TrainLabels
+     */
+    private void step00_SVM_01_MakeTrainDatas(String i_DirFullName ,int i_TrainLabel ,List<Mat> io_TrainDatas ,List<Integer> io_TrainLabels)
+    {
+        File    v_SVMDir   = new File(i_DirFullName);
+        File [] v_SVMFiles = v_SVMDir.listFiles();
+        
+        for (File v_SVMFile : v_SVMFiles)
+        {
+            Mat v_MSource = Imgcodecs.imread(v_SVMFile.getAbsolutePath());
+            Mat v_MTarget = new Mat();
+            
+            Imgproc.cvtColor(v_MSource ,v_MTarget ,Imgproc.COLOR_BGR2GRAY);
+            Imgproc.resize(v_MTarget ,v_MTarget ,new Size(this.faceSize ,this.faceSize));
+            v_MTarget.convertTo(v_MTarget, CvType.CV_32FC1);
+            
+            /*
+             * cn为新的通道数，如果cn = 0，表示通道数不会改变。
+             * 参数rows为新的行数，如果rows = 0，表示行数不会改变。
+             * 
+             * 我们将参数定义为reshape(1, 1)的结果就是原图像对应的矩阵将被拉伸成一个一行的向量，作为特征向量。
+             */
+            Mat v_Reshape = v_MTarget.reshape(0, 1);
+            
+            io_TrainDatas.add(v_Reshape);
+            io_TrainLabels.add(i_TrainLabel);
+            
+            v_MSource.release();
+            v_MTarget.release();
+            v_MSource = null;
+            v_MTarget = null;
+        }
+    }
+    
+    
+    
+    
+    /**
+     * 加载SVM模型
+     */
+    private void step00_SVM_02_LoadSVM()
+    {
+        this.svm = SVM.load(this.savePathFaceDB + Help.getSysPathSeparator() + "HY.xml");
+    }
+    
+    
+    
+    /**
+     * 人脸检测
+     * 
+     * @param i_MSource
+     * @return
+     */
+    private Integer step00_SVM_03Check(Mat i_MSource)
+    {
+        Mat v_MTarget = new Mat();
+        
+        Imgproc.cvtColor(i_MSource ,v_MTarget ,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.resize(v_MTarget ,v_MTarget ,new Size(this.faceSize ,this.faceSize));
+        v_MTarget.convertTo(v_MTarget, CvType.CV_32FC1);
+        
+        Mat v_Reshape = v_MTarget.reshape(1, 1);
+        float v_Ret = this.svm.predict(v_Reshape);
+        
+        v_MTarget.release();
+        v_MTarget = null;
+        return (int)v_Ret;
+    }
+    
         
     
     /**
@@ -107,6 +259,7 @@ public class JU_108_Face
         int           v_DrawCount    = 0;                           // 绘制AI数
         List<CVPoint> v_CVPoints     = null;
         List<Mat>     v_VideoDatas   = new ArrayList<Mat>();
+        boolean       v_IsRead       = false;
         
         try
         {
@@ -116,11 +269,13 @@ public class JU_108_Face
             while ( this.isRunning )
             {
                 v_MCurrent = new Mat();
-                v_VideoCapture.read(v_MCurrent);
+                v_IsRead   = v_VideoCapture.read(v_MCurrent);
+                if ( !v_IsRead )
+                {
+                    break;
+                }
                 
-//                HighGui.imshow("第一帧" ,v_MCurrent);
-//                HighGui.waitKey(1);
-                
+                List<CVPoint> v_FacePoints = null;
                 if ( this.frameInterval == 0 || v_MIndex++ % this.frameInterval == 0 )
                 {
                     if ( v_CVPoints != null )
@@ -135,21 +290,23 @@ public class JU_108_Face
                         v_AICount++;
                         v_MOld.release();
                         
-                        step03_AI_Face(v_MCurrent ,v_CVPoints);
+                        v_FacePoints = step03_AI_Face(v_MCurrent ,v_CVPoints);
                     }
                     v_MOld = v_MCurrent;
                 }
                 
-                /*
+                
                 v_MShow = v_MOld.clone();
-                if ( v_CVPoints != null )
+                if ( v_FacePoints != null )
                 {
-                    step04_DrawRect(v_MShow ,v_CVPoints ,OpenCV.$Color_Green ,2);
+                    // step04_DrawRect(v_MShow ,v_CVPoints ,OpenCV.$Color_Green ,2);
+                    step04_DrawFace(v_MShow ,v_FacePoints ,OpenCV.$Color_Green ,2);
                     v_DrawCount++;
                 }
+                
                 v_VideoDatas.add(v_MShow);
                 
-                
+                /*
                 HighGui.imshow("视频视频" + ++v_MIndex ,v_MShow);
                 int v_Key = HighGui.waitKey(1);
                 if ( v_Key == 27 )
@@ -197,8 +354,8 @@ public class JU_108_Face
         
         $Logger.info("AI 分析完成 " + " 用时：" + Date.toTimeLen(Date.getNowTime().getTime() - v_STime.getTime()) + "   " + v_VideoDatas.size() + "帧 " + v_AICount + "次AI " + v_DrawCount + "次绘制");
         
-        String v_SaveVideoName = "";
-        v_DrawCount = 0;   // 暂时不保存
+        String v_SaveVideoName = "D:\\VideoDatas\\face.mp4";
+        // v_DrawCount = 0;   // 暂时不保存
         step05_SaveVideo(v_DrawCount ,v_VideoDatas ,v_SaveVideoName);
     }
         
@@ -217,11 +374,11 @@ public class JU_108_Face
         Mat  v_M1Gray = new Mat();
         Mat  v_M2Gray = new Mat();
         
-        Imgproc.resize(i_M1 ,v_M1Gray ,new Size(1280 ,720));
-        Imgproc.resize(i_M2 ,v_M2Gray ,new Size(1280 ,720));
+//        Imgproc.resize(i_M1 ,v_M1Gray ,new Size(1280 ,720));
+//        Imgproc.resize(i_M2 ,v_M2Gray ,new Size(1280 ,720));
         
-        Imgproc.cvtColor(v_M1Gray ,v_M1Gray ,Imgproc.COLOR_BGR2GRAY);
-        Imgproc.cvtColor(v_M2Gray ,v_M2Gray ,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(i_M1 ,v_M1Gray ,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cvtColor(i_M2 ,v_M2Gray ,Imgproc.COLOR_BGR2GRAY);
         
         Mat v_MSubtract = new Mat();
         Core.subtract(v_M1Gray ,v_M2Gray ,v_MSubtract);
@@ -398,7 +555,7 @@ public class JU_108_Face
                         v_CVPointList.remove(x);
                         continue;
                     }
-                    
+
                     v_PKey = v_CVPointMap.getRow(v_CVPoint.getXMin() + "" ,(v_CVPoint.getYMin() - v_BlockSize * 2) + "");
                     v_CVP  = v_PKey == null ? null : v_CVPoints.get(v_PKey);
                     if ( v_CVP != null )
@@ -408,7 +565,7 @@ public class JU_108_Face
                         continue;
                     }
                 }
-                
+
                 v_CVPointList.remove(x);
             }
             else
@@ -438,19 +595,23 @@ public class JU_108_Face
         OpenCV.merge(v_CVPointList);
         
         v_TLen06 = Date.getNowTime().getTime() - v_STime.getTime();
+        /*
         $Logger.info("AI 6步用时：" + Date.toTimeLen(v_TLen01)
                             + "  " + Date.toTimeLen(v_TLen02)
                             + "  " + Date.toTimeLen(v_TLen03)
                             + "  " + Date.toTimeLen(v_TLen04)
                             + "  " + Date.toTimeLen(v_TLen05)
                             + "  " + Date.toTimeLen(v_TLen06));
+        */
         return v_CVPointList;
     }
     
     
     
-    private void step03_AI_Face(Mat i_MSource ,List<CVPoint> i_CVPoints)
+    private List<CVPoint> step03_AI_Face(Mat i_MSource ,List<CVPoint> i_CVPoints)
     {
+        List<CVPoint> v_RetPoints = new ArrayList<CVPoint>();
+        
         for (CVPoint v_CVP : i_CVPoints)
         {
             Mat           v_CutImg     = OpenCV.cutImage(i_MSource ,v_CVP);
@@ -458,8 +619,32 @@ public class JU_108_Face
             
             if ( !Help.isNull(v_FacePoints) )
             {
-                String v_SaveFile = this.savePathFaceUnknown + Help.getSysCurrentPath() + Date.getNowTime().getFullMilli_ID() + ".jpg";  // 注意：文件名称，不支持中文
-                Imgcodecs.imwrite(v_SaveFile ,v_CutImg);
+                for (CVPoint v_Face : v_FacePoints)
+                {
+                    Mat     v_CutFace = OpenCV.cutImage(v_CutImg ,v_Face);
+                    Integer v_FaceNo  = step00_SVM_03Check(v_CutFace);
+                    
+                    if ( v_FaceNo == null )
+                    {
+                        OpenCV.resizeWidth(v_CutFace ,v_CutFace ,this.faceSize);
+                        
+                        String v_SaveFile = this.savePathFaceUnknown + Help.getSysPathSeparator() + Date.getNowTime().getFullMilli_ID() + ".jpg";  // 注意：文件名称，不支持中文
+                        Imgcodecs.imwrite(v_SaveFile ,v_CutFace);
+                        
+                        v_CutFace.release();
+                        v_CutFace = null;
+                    }
+                    else
+                    {
+                        CVPoint v_FacePoint = new CVPoint(v_CVP.getXMin() + v_Face.getXMin()
+                                                         ,v_CVP.getYMin() + v_Face.getYMin()
+                                                         ,v_CVP.getXMin() + v_Face.getXMax()
+                                                         ,v_CVP.getYMin() + v_Face.getYMax());
+                        
+                        v_FacePoint.setFaceNo(v_FaceNo);
+                        v_RetPoints.add(v_FacePoint);
+                    }
+                }
                 
                 v_FacePoints.clear();
                 v_FacePoints = null;
@@ -468,6 +653,8 @@ public class JU_108_Face
             v_CutImg.release();
             v_CutImg = null;
         }
+        
+        return v_RetPoints;
     }
     
     
@@ -531,6 +718,23 @@ public class JU_108_Face
     
     
     
+    private void step04_DrawFace(Mat io_MSource ,List<CVPoint> i_CVPoints ,Scalar i_Color ,int i_LineSize)
+    {
+        for (CVPoint v_CVP : i_CVPoints)
+        {
+            Imgproc.putText(io_MSource
+                           ,"马龙"// this.faceNameMap.get(v_CVP.getFaceNo())
+                           ,new Point(v_CVP.getXMin() + v_CVP.getWidth() / 2.0D ,v_CVP.getYMin() - 16D)
+                           ,4
+                           ,1.0D
+                           ,i_Color
+                           ,i_LineSize);
+            Imgproc.rectangle(io_MSource ,v_CVP.toRect() ,i_Color ,i_LineSize);
+        }
+    }
+    
+    
+    
     private static void step05_SaveVideo(int i_DrawCount ,List<Mat> io_VideoDatas ,String i_SaveVideoName)
     {
         VideoWriter v_VideoWrite = null;
@@ -540,10 +744,10 @@ public class JU_108_Face
             {
                 v_VideoWrite = new VideoWriter();
                 Size v_VidoeSize   = new Size();
-                v_VidoeSize.width  = 1280;                                   // v_VideoCapture.get(Videoio.CAP_PROP_FRAME_WIDTH);
+                v_VidoeSize.width  = 1488;                                   // v_VideoCapture.get(Videoio.CAP_PROP_FRAME_WIDTH);
                 v_VidoeSize.height = 720;                                    // v_VideoCapture.get(Videoio.CAP_PROP_FRAME_HEIGHT);
-                int    v_Fourcc    = VideoWriter.fourcc('F', 'L', 'V', '1'); // v_VideoCapture.get(Videoio.CAP_PROP_FOURCC);
-                double v_Fps       = 25;                                     // v_VideoCapture.get(Videoio.CAP_PROP_FPS);
+                int    v_Fourcc    = VideoWriter.fourcc('M', 'P', '4', '2'); // VideoWriter.fourcc('F', 'L', 'V', '1'); // v_VideoCapture.get(Videoio.CAP_PROP_FOURCC);
+                double v_Fps       = 24;                                     // v_VideoCapture.get(Videoio.CAP_PROP_FPS);
                 v_VideoWrite.open(i_SaveVideoName ,v_Fourcc ,v_Fps ,v_VidoeSize);
                 for (Mat v_Data : io_VideoDatas)
                 {

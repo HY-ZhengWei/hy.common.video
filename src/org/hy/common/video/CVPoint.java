@@ -29,6 +29,8 @@ public class CVPoint
     
     private Double  yHelp;
     
+    private Integer faceNo;
+    
     
     
     public CVPoint()
@@ -393,6 +395,18 @@ public class CVPoint
     public void setYHelp(Double yHelp)
     {
         this.yHelp = yHelp;
+    }
+
+
+    public Integer getFaceNo()
+    {
+        return faceNo;
+    }
+
+    
+    public void setFaceNo(Integer faceNo)
+    {
+        this.faceNo = faceNo;
     }
     
 }

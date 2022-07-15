@@ -148,7 +148,7 @@ public class JU_106_SVM_Number
              * 
              * 我们将参数定义为reshape(1, 1)的结果就是原图像对应的矩阵将被拉伸成一个一行的向量，作为特征向量。
              */
-            Mat v_Reshape = v_MTarget.reshape(1, 1);
+            Mat v_Reshape = v_MTarget.reshape(0, 1);
             
             io_TrainDatas.add(v_Reshape);
             io_TrainLabels.add(i_TrainLabel);
