@@ -21,7 +21,7 @@ public class CVPoint
     
     private Rect    rect;
     
-    private org.bytedeco.opencv.opencv_core.Rect javaCVRect;
+    // private org.bytedeco.opencv.opencv_core.Rect javaCVRect;
     
     private Integer count;
     
@@ -59,6 +59,28 @@ public class CVPoint
         this.isChange       = true;
         this.javaCVIsChange = true;
         this.count          = 1;
+    }
+    
+    
+    
+    public boolean isOK()
+    {
+        if ( this.xMin >= this.xMax )
+        {
+            return false;
+        }
+        
+        if ( this.yMin >= this.yMax )
+        {
+            return false;
+        }
+        
+        if ( this.xMin < 0 || this.yMin < 0 )
+        {
+            return false;
+        }
+        
+        return true;
     }
     
     
@@ -155,6 +177,35 @@ public class CVPoint
     }
     
     
+    
+    /**
+     * 按比例缩放
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-18
+     * @version     v1.0
+     * 
+     * @param i_Value  缩放比例
+     */
+    public CVPoint scale(double i_Scale)
+    {
+        this.xMin    *= i_Scale;
+        this.yMin    *= i_Scale;
+        this.xMax    *= i_Scale;
+        this.yMax    *= i_Scale;
+        this.isChange = true;
+        
+        if ( this.xHelp != null )
+        {
+            this.xHelp *= i_Scale;
+            this.yHelp *= i_Scale;
+        }
+        
+        return this;
+    }
+    
+    
+    
     /**
      * 缩放
      * 
@@ -240,6 +291,7 @@ public class CVPoint
     
     
     
+    /*
     public synchronized org.bytedeco.opencv.opencv_core.Rect javaCVToRect()
     {
         if ( this.javaCVIsChange )
@@ -254,6 +306,7 @@ public class CVPoint
         
         return this.javaCVRect;
     }
+    */
     
     
     

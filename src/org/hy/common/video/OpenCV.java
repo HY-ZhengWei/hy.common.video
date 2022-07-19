@@ -1,18 +1,32 @@
 package org.hy.common.video;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bytedeco.opencv.opencv_core.MatVector;
+import javax.imageio.ImageIO;
+
 import org.hy.common.Help;
+import org.hy.common.xml.log.Logger;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.ml.Ml;
 import org.opencv.ml.SVM;
@@ -21,22 +35,27 @@ import org.opencv.ml.TrainData;
 public class OpenCV
 {
  
+    private static final Logger  $Logger = new Logger(OpenCV.class);
+    
     private static List<CVColor> $LPRCVColors;
-    
-    
-    private static       Scalar $BlackLowerColor;
-                         
-    private static       Scalar $BlackUpperColor;
-                         
-    private static       Scalar $WhiteLowerColor;
-                         
-    private static       Scalar $WhiteUpperColor;
-    
+                                 
+                                 
+    private static       Scalar  $BlackLowerColor;
+                                 
+    private static       Scalar  $BlackUpperColor;
+                                 
+    private static       Scalar  $WhiteLowerColor;
+                                 
+    private static       Scalar  $WhiteUpperColor;
+                                 
     /** 红色 */
-    public  static final Scalar $Color_Red;
-    
+    public  static final Scalar  $Color_Red;
+                                 
     /** 绿色 */
-    public  static final Scalar $Color_Green;
+    public  static final Scalar  $Color_Green;
+    
+    /** 是否初始化过 */
+    private static       boolean $IsInit = false;
     
     
     
@@ -67,6 +86,17 @@ public class OpenCV
         $LPRCVColors.add(new CVColor("黄牌" ,v_YellowLowerColor ,v_YellowUpperColor ,44D / 14D ,7));
         $LPRCVColors.add(new CVColor("蓝牌" ,v_BlueLowerColor   ,v_BlueUpperColor   ,44D / 14D ,7));
         $LPRCVColors.add(new CVColor("绿牌" ,v_GreenLowerColor  ,v_GreenUpperColor  ,48D / 14D ,9));
+    }
+    
+    
+    
+    public static synchronized void init()
+    {
+        if ( !$IsInit )
+        {
+            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+            $IsInit = true;
+        }
     }
     
     
@@ -275,6 +305,7 @@ public class OpenCV
      * @param i_Contours
      * @return
      */
+    /*
     public static int [][] contoursCounter(MatVector i_Contours ,int i_BlockWCount ,int i_BlockHCount ,int i_BlockSize)
     {
         int [][] v_Counter = new int[i_BlockHCount][i_BlockWCount];
@@ -287,6 +318,7 @@ public class OpenCV
         
         return v_Counter;
     }
+    */
     
     
     
@@ -725,4 +757,207 @@ public class OpenCV
         return v_RowIndex * i_BlockWCount + v_ColIndex;
     }
     
+    
+    
+    /**
+     * 将OpenCV的Mat转为BufferedImage能用的类型
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-01
+     * @version     v1.0
+     * 
+     * @param i_Mat
+     * @param i_FileExtension  图片文件的格式。支持: ".jpg"  ".png"
+     * @return
+     */
+    public static BufferedImage matToJava(Mat i_Mat ,String i_FileExtension)
+    {
+        MatOfByte v_MatOfByte = new MatOfByte();
+        Imgcodecs.imencode(i_FileExtension ,i_Mat ,v_MatOfByte);
+        
+        byte []       v_Bytes = v_MatOfByte.toArray();
+        BufferedImage v_Ret   = null;
+        InputStream   v_In    = null;
+        
+        try
+        {
+            v_In = new ByteArrayInputStream(v_Bytes);
+            v_Ret = ImageIO.read(v_In);
+        }
+        catch (IOException e)
+        {
+            $Logger.error(e);
+        }
+        finally
+        {
+            try
+            {
+                if ( v_In != null )
+                {
+                    v_In.close();
+                }
+                v_In = null;
+            }
+            catch (Exception exce)
+            {
+                // Nothing.
+            }
+        }
+        
+        return v_Ret;
+    }
+    
+    
+    
+    /**
+     * BufferedImage转换成Mat
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-19
+     * @version     v1.0
+     * 
+     * @param i_BufferImage 要转换的BufferedImage
+     * @param i_JavaType    bufferedImage的类型 如 BufferedImage.TYPE_3BYTE_BGR
+     * @param i_MatType     转换成mat的type 如 CvType.CV_8UC3
+     */
+    public static Mat javaToMat(BufferedImage i_BufferImage, int i_JavaType, int i_MatType)
+    {
+        if (i_BufferImage == null)
+        {
+            throw new IllegalArgumentException("original == null");
+        }
+        
+        if (i_BufferImage.getType() != i_JavaType)
+        {
+            BufferedImage v_Image    = new BufferedImage(i_BufferImage.getWidth(), i_BufferImage.getHeight(), i_JavaType);
+            Graphics2D    v_Graphics = v_Image.createGraphics();
+            
+            try
+            {
+                v_Graphics.setComposite(AlphaComposite.Src);
+                v_Graphics.drawImage(i_BufferImage, 0, 0, null);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                v_Graphics.dispose();
+            }
+        }
+
+        byte [] v_Pixels = ((DataBufferByte) i_BufferImage.getRaster().getDataBuffer()).getData();
+        Mat     v_Mat    = Mat.eye(i_BufferImage.getHeight(), i_BufferImage.getWidth(), i_MatType);
+        v_Mat.put(0, 0, v_Pixels);
+        return v_Mat;
+    }
+    
+    
+    
+    /**
+     * BufferedImage转换成Mat
+     * 
+     * @author      ZhengWei(HY)
+     * @createDate  2022-07-19
+     * @version     v1.0
+     * 
+     * @param i_BufferImage 要转换的BufferedImage
+     * @param i_JavaType    bufferedImage的类型 如 BufferedImage.TYPE_3BYTE_BGR
+     * @param i_MatType     转换成mat的type 如 CvType.CV_8UC3
+     */
+    public static Mat javaToMat(BufferedImage i_BufferImage, int i_JavaType, int i_MatType ,Mat io_MTarget)
+    {
+        if (i_BufferImage == null)
+        {
+            throw new IllegalArgumentException("original == null");
+        }
+        
+        if (i_BufferImage.getType() != i_JavaType)
+        {
+            BufferedImage v_Image    = new BufferedImage(i_BufferImage.getWidth(), i_BufferImage.getHeight(), i_JavaType);
+            Graphics2D    v_Graphics = v_Image.createGraphics();
+            
+            try
+            {
+                v_Graphics.setComposite(AlphaComposite.Src);
+                v_Graphics.drawImage(i_BufferImage, 0, 0, null);
+            }
+            catch (Exception exce)
+            {
+                $Logger.error(exce);
+            }
+            finally
+            {
+                v_Graphics.dispose();
+            }
+        }
+
+        byte [] v_Pixels = ((DataBufferByte) i_BufferImage.getRaster().getDataBuffer()).getData();
+        // Mat     v_Mat    = Mat.eye(i_BufferImage.getHeight(), i_BufferImage.getWidth(), i_MatType);
+        io_MTarget.put(0, 0, v_Pixels);
+        return io_MTarget;
+    }
+    
+    
+    
+    /**
+     * 绘制文字（支持中文）
+     * 
+     * @param io_MSource        被绘制的对象
+     * @param i_FileExtension   图片文件的格式。支持: ".jpg"  ".png"
+     * @param i_XY              绘制坐标X、Y
+     * @param i_Text            文字的内容
+     * @param i_Font            文字的字体
+     * @param i_FontColor       文字的颜色
+     * @return                  新生成一个全新的Mat对象。请注意内存的释放
+     */
+    public static void putText(Mat io_MSource ,String i_FileExtension ,CVPoint i_XY ,String i_Text ,Font i_Font ,Color i_FontColor)
+    {
+        OpenCV.putText(io_MSource ,i_FileExtension ,i_XY.getXMin().intValue() ,i_XY.getYMin().intValue() ,i_Text ,i_Font ,i_FontColor);
+    }
+    
+    
+    
+    /**
+     * 绘制文字（支持中文）
+     * 
+     * @param io_MSource        被绘制的对象
+     * @param i_FileExtension   图片文件的格式。支持: ".jpg"  ".png"
+     * @param i_X               绘制坐标X
+     * @param i_Y               绘制坐标Y
+     * @param i_Text            文字的内容
+     * @param i_Font            文字的字体
+     * @param i_FontColor       文字的颜色
+     * @return                  不会创建新的Mat对象
+     */
+    public static void putText(Mat io_MSource ,String i_FileExtension ,int i_X ,int i_Y ,String i_Text ,Font i_Font ,Color i_FontColor)
+    {
+        BufferedImage v_BImage = OpenCV.matToJava(io_MSource ,i_FileExtension);
+        if ( v_BImage == null )
+        {
+            return;
+        }
+        
+        Graphics2D v_Graphics = v_BImage.createGraphics();
+        
+        try
+        {
+            v_Graphics.drawImage(v_BImage, 0, 0, v_BImage.getWidth() ,v_BImage.getHeight(), null);
+            v_Graphics.setFont(i_Font);                 // 设置字体
+            v_Graphics.setColor(i_FontColor);           // 设置颜色
+            v_Graphics.drawString(i_Text ,i_X, i_Y);    // 设置水印的坐标
+        }
+        catch (Exception exce)
+        {
+            $Logger.error(exce);
+        }
+        finally
+        {
+            v_Graphics.dispose();
+            v_Graphics = null;
+        }
+        
+        OpenCV.javaToMat(v_BImage ,BufferedImage.TYPE_3BYTE_BGR ,CvType.CV_8UC3 ,io_MSource);
+    }
 }

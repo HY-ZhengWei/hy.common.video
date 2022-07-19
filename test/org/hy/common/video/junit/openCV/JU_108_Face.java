@@ -52,7 +52,7 @@ public class JU_108_Face
     
     
     
-    private boolean isRunning;
+    private boolean              isRunning;
     
     /** 间隔帧数。即不是每一帧均进行AI算法，可以忽略一些。默认值为：5 */
     private int                  frameInterval;

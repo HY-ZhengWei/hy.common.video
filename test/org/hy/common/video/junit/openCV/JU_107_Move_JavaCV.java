@@ -100,7 +100,7 @@ public class JU_107_Move_JavaCV
         
         for (CVPoint v_CVP : i_CVPoints)
         {
-            opencv_imgproc.rectangle(io_MSource ,v_CVP.javaCVToRect() ,i_Color ,i_LineSize ,opencv_imgproc.CV_AA, 0);
+            // opencv_imgproc.rectangle(io_MSource ,v_CVP.javaCVToRect() ,i_Color ,i_LineSize ,opencv_imgproc.CV_AA, 0);
         }
     }
     
@@ -145,7 +145,7 @@ public class JU_107_Move_JavaCV
         Scalar v_MMaskColor = new Scalar(255 ,255 ,255 ,0);
         Mat v_MMask = i_M2.clone();
         
-        v_Counter = OpenCV.contoursCounter(v_Contours ,v_BlockWCount ,v_BlockHCount ,v_BlockSize);
+        v_Counter = null;// OpenCV.contoursCounter(v_Contours ,v_BlockWCount ,v_BlockHCount ,v_BlockSize);
         Map<Integer ,CVPoint>              v_CVPoints   = new HashMap<Integer ,CVPoint>();
         TablePartitionRID<String ,Integer> v_CVPointMap = new TablePartitionRID<String ,Integer>();
         int                                v_CVPMapNo   = 0;
