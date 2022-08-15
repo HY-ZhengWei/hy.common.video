@@ -61,7 +61,7 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     
     public JU_109_DrawLine()
     {
-        String v_ImageUrl  = JU_109_DrawLine.class.getResource("JU_016_PolyLines.jpg").getFile().substring(1);
+        String v_ImageUrl  = JU_109_DrawLine.class.getResource("JU_016_PolyLines_T1N151.jpg").getFile().substring(1);
         this.imagePanel    = new ZPanel();
         this.mouseListener = new ZPanelMouseListener(this.imagePanel ,v_ImageUrl ,"D:\\VideoDatas\\JU_109_DrawLine.jpg");
         this.imagePanel.addMouseListener(this.mouseListener);

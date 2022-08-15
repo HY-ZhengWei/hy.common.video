@@ -88,7 +88,7 @@ public class JU_016_PolyLines
     @Test
     public void showImage()
     {
-        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines.jpg").getFile().substring(1));
+        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines_T1N151.jpg").getFile().substring(1));
         
         int      v_Width          = v_MTarget.cols();        // 列数是宽度
         int      v_Height         = v_MTarget.rows();        // 行数是高度
@@ -122,7 +122,7 @@ public class JU_016_PolyLines
     @Test
     public void polyLines()
     {
-        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines.jpg").getFile().substring(1));
+        Mat v_MTarget = Imgcodecs.imread(JU_016_PolyLines.class.getResource("JU_016_PolyLines_T1N151.jpg").getFile().substring(1));
         
         Imgproc.polylines(v_MTarget ,$RedAreaPoints ,true ,OpenCV.$Color_Red ,1);
         HighGui.imshow("红色区域" ,v_MTarget);
