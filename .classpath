@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.base"/>
-	<classpathentry kind="lib" path="lib/jave-1.0.5.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hy.common.xjava"/>
 	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.13.1.jar"/>
@@ -34,38 +33,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="hy.common.video/lib/openCV/4.6.0/x64"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/javaCV/artoolkitplus.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/ffmpeg.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/flandmark.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/flycapture.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/javacpp.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/javacv.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/javacv-platform.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/leptonica.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/libdc1394.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/libfreenect.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/libfreenect2.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/librealsense.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/librealsense2.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/openblas.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/opencv.jar" sourcepath="lib/javaCV/javacv-platform-1.5.7-src.zip"/>
-	<classpathentry kind="lib" path="lib/javaCV/tesseract.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/videoinput.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/videoinput-platform.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/artoolkitplus-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/ffmpeg-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/flandmark-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/flycapture-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/javacpp-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/leptonica-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/libdc1394-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/libfreenect2-macosx-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/libfreenect-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/librealsense2-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/librealsense-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/openblas-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/opencv-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/tesseract-windows-x86_64.jar"/>
-	<classpathentry kind="lib" path="lib/javaCV/windows-x86_64/videoinput-windows-x86_64.jar"/>
+	<classpathentry kind="lib" path="lib/jave-1.0.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
