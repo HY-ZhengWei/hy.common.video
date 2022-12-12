@@ -30,6 +30,7 @@ import org.hy.common.xml.log.Logger;
  *              v6.0  2021-07-27  添加：H265转TS的视频
  *                                添加：H264转TS的视频
  *              v7.0  2021-08-07  添加：RTSP码流直转M3U8(HLS)的视频
+ *              v8.0  2022-12-10  添加：RTSP码流保存视频流分段文件的最大数量
  */
 public class VideoHelp
 {
@@ -801,18 +802,11 @@ public class VideoHelp
      * @param i_SaveM3U8FullName   保存M3U8文件的全路径
      * @param i_TsListSize         M3U8文件中的ts文件的数量
      * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
-     * @param i_IsWait             是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
      * @return
-     * 
-     * 星探
-     * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3 -vcodec copy -y C:/VideoDatas/video.m3u8
-     * 
-     * 华为
-     * ffmpeg -f rtsp -rtsp_transport tcp -i rtsp://IP:Port/LiveMedia/ch1/Media1 -codec copy -f hls -hls_list_size 3 -hls_wrap 20 -hls_time 15 D:\VideoDatas\video.m3u8
      */
     public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen)
     {
-        return rtspToM3U8(i_RTSPUrl ,i_SaveM3U8FullName ,i_TsListSize ,i_KeyFrameLen ,false);
+        return rtspToM3U8(i_RTSPUrl ,i_SaveM3U8FullName ,i_TsListSize ,i_KeyFrameLen ,99 ,false);
     }
     
     
@@ -826,6 +820,41 @@ public class VideoHelp
      * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
      * @param i_IsWait             是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
      * @return
+     */
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen ,boolean i_IsWait)
+    {
+        return rtspToM3U8(i_RTSPUrl ,i_SaveM3U8FullName ,i_TsListSize ,i_KeyFrameLen ,99 ,i_IsWait);
+    }
+    
+    
+    
+    /**
+     * 解析RTSP视频流，转换为HLS直播流
+     * 
+     * @param i_RTSPUrl            RTSP视频流的地址
+     * @param i_SaveM3U8FullName   保存M3U8文件的全路径
+     * @param i_TsListSize         M3U8文件中的ts文件的数量
+     * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
+     * @param i_SaveFileCount      保存视频分段文件的最大个数
+     * @return
+     */
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen ,int i_SaveFileCount)
+    {
+        return rtspToM3U8(i_RTSPUrl ,i_SaveM3U8FullName ,i_TsListSize ,i_KeyFrameLen ,i_SaveFileCount ,false);
+    }
+    
+    
+    
+    /**
+     * 解析RTSP视频流，转换为HLS直播流
+     * 
+     * @param i_RTSPUrl            RTSP视频流的地址
+     * @param i_SaveM3U8FullName   保存M3U8文件的全路径
+     * @param i_TsListSize         M3U8文件中的ts文件的数量
+     * @param i_KeyFrameLen        分割关键帧的长度（单位：帧数）。一般为2，保存可能为4秒一个段
+     * @param i_SaveFileCount      保存视频分段文件的最大个数
+     * @param i_IsWait             是否等待命令执行完成（异步：不等待命令执行完成，立刻返回）
+     * @return
      * 
      * 星探
      * ffmpeg -i "rtsp://IP:Port/live/0/MAIN" -fflags flush_packets -max_delay 2 -flags -global_header -hls_time 2 -hls_list_size 3 -vcodec copy -y C:/VideoDatas/video.m3u8
@@ -833,7 +862,7 @@ public class VideoHelp
      * 华为
      * ffmpeg -f rtsp -rtsp_transport tcp -i rtsp://IP:Port/LiveMedia/ch1/Media1 -codec copy -f hls -hls_list_size 3 -hls_wrap 20 -hls_time 15 D:\VideoDatas\video.m3u8
      */
-    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen ,boolean i_IsWait)
+    public static Process rtspToM3U8(String i_RTSPUrl ,String i_SaveM3U8FullName ,int i_TsListSize ,int i_KeyFrameLen ,int i_SaveFileCount ,boolean i_IsWait)
     {
         List<String> command = new ArrayList<String>();
 
@@ -853,7 +882,7 @@ public class VideoHelp
         command.add("-hls_list_size");
         command.add(i_TsListSize + "");
         command.add("-hls_wrap");
-        command.add("20");
+        command.add("" + i_SaveFileCount);
         command.add("-hls_time");
         command.add(i_KeyFrameLen + "");
         command.add(i_SaveM3U8FullName);
