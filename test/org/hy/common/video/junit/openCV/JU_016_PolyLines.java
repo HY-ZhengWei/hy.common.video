@@ -83,7 +83,7 @@ public class JU_016_PolyLines
         }
     }
     
-    
+     
     
     @Test
     public void showImage()

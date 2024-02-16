@@ -34,5 +34,9 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jave-1.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/log/logback-classic-1.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/log/logback-core-1.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/log/slf4j-api-1.7.30.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

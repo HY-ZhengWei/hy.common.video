@@ -40,7 +40,8 @@ public class JU_VideoToM3U8
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
         
         //String v_M3U8Name = VideoHelp.mp4ToM3U8("D:\\大数据下载\\FMS.mp4" ,"D:\\大数据下载\\FMS" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
-        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\素材库\\101_7_1.mp4" ,"C:\\\\素材库" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
+        //String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\素材库\\101_7_1.mp4" ,"C:\\\\素材库" ,1 ,"http://127.0.0.1/msFile/file/play/FMS/");
+        String v_M3U8Name = VideoHelp.mp4ToM3U8("C:\\Users\\hyzhe\\Downloads\\20230221.mp4" ,"C:\\Users\\hyzhe\\Downloads\\20230221" ,1 ,"http://127.0.0.1/msFile/file/play/20230221/");
         
         $Logger.info("M3U8路径：" + v_M3U8Name);
     }
@@ -50,7 +51,6 @@ public class JU_VideoToM3U8
     /**
      * Flv解码为Mp4，Mp4解码为TS，再TS转M3U8
      */
-    @Test
     public void flvToMp4ToTSToM3U8()
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
@@ -69,7 +69,6 @@ public class JU_VideoToM3U8
     /**
      * Flv解码为TS，再TS转M3U8
      */
-    @Test
     public void flvToTSToM3U8()
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
@@ -94,7 +93,6 @@ public class JU_VideoToM3U8
     /**
      * Flv解码为TS，再TS创建M3U8
      */
-    @Test
     public void flvToTSCreateM3U8()
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";
@@ -117,7 +115,6 @@ public class JU_VideoToM3U8
     
     
     
-    @Test
     public void mp4ToTS()
     {
         VideoHelp.$FFMpegHome = "C:\\WorkSpace\\hy.common.video\\ffmpeg-4.1-win64-static";

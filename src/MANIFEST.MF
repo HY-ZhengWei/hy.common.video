@@ -3,5 +3,5 @@ Created-By: HY.ZhengWei@qq.com  2018
 Specification-Version: 1.0.6  2022-12-12
 SourceCode: https://github.com/HY-ZhengWei/hy.common.video
 SourceCodeChina: https://gitee.com/HY-ZhengWei/hy.common.video
-Build-JDK: 1.8
+Build-JDK: OpenJDK 1.8
  

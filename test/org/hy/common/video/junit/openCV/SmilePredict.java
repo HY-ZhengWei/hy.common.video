@@ -133,7 +133,6 @@ public class SmilePredict {
                 try {
                     Thread.sleep(100);//线程暂停100ms
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }

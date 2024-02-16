@@ -128,28 +128,24 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
         @Override
         public void mousePressed(MouseEvent e)
         {
-            // TODO Auto-generated method stub
             
         }
 
         @Override
         public void mouseReleased(MouseEvent e)
         {
-            // TODO Auto-generated method stub
             
         }
 
         @Override
         public void mouseEntered(MouseEvent e)
         {
-            // TODO Auto-generated method stub
             
         }
 
         @Override
         public void mouseExited(MouseEvent e)
         {
-            // TODO Auto-generated method stub
             
         }
     }
@@ -246,7 +242,6 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     @Override
     public void windowOpened(WindowEvent e)
     {
-        // TODO Auto-generated method stub
         
     }
 
@@ -267,7 +262,6 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     @Override
     public void windowClosed(WindowEvent e)
     {
-        // TODO Auto-generated method stub
         
     }
 
@@ -276,7 +270,6 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     @Override
     public void windowIconified(WindowEvent e)
     {
-        // TODO Auto-generated method stub
         
     }
 
@@ -285,7 +278,6 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     @Override
     public void windowDeiconified(WindowEvent e)
     {
-        // TODO Auto-generated method stub
         
     }
 
@@ -294,7 +286,6 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     @Override
     public void windowActivated(WindowEvent e)
     {
-        // TODO Auto-generated method stub
         
     }
 
@@ -303,7 +294,6 @@ public class JU_109_DrawLine extends JFrame implements WindowListener
     @Override
     public void windowDeactivated(WindowEvent e)
     {
-        // TODO Auto-generated method stub
         
     }
 }
