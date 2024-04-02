@@ -1,7 +1,6 @@
 /bin
 *.flv
 *.mp4
-test/inputPath/20180919-WZYB-3.mpg
 *.mpg
 /lib/OCR/5.2.1/tessdata
 /lib/OCR/5.2.1/win32-x86-64

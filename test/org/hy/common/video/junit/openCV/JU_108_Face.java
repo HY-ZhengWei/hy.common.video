@@ -94,7 +94,7 @@ public class JU_108_Face
     @Test
     public void face()
     {
-        String v_VideoURL = "rtsp://admin:wzyb9114@10.1.130.210/Streaming/Channels/101";
+        String v_VideoURL = "rtsp://用户:密码@127.0.0.1/Streaming/Channels/101";
         v_VideoURL = JU_008_Template.class.getResource("JU_108_Face.mp4").getFile().substring(1);
         
         step00_SVM_01_Train();
